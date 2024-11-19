@@ -10,7 +10,7 @@ module.exports = {
     name: "uptime",
     info: "Xem thời gian bot đã online và thông tin hệ thống.",
     dev: "HNT",
-    onPrefix: true,
+    onPrefix: false,
     dmUser: false, 
     nickName: ["uptime", "thongtinhệthống"], 
     usages: "uptime",

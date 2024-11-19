@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 const adminConfig = JSON.parse(fs.readFileSync("admin.json", "utf8"));
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9999;
 const chalk = require("chalk");
 const boldText = (text) => chalk.bold(text)
 const gradient = require("gradient-string");
@@ -38,8 +38,8 @@ app.use(session({
 function getBotInfo() {
     return {
         botName: adminConfig.botName || "MyBot",
-        prefix: adminConfig.prefix || "!",
-        ownerName: adminConfig.ownerName || "Jonell Magallanes",
+        prefix: adminConfig.prefix || ".",
+        ownerName: adminConfig.ownerName || "Kenjji Akira",
         commandsCount: fs.readdirSync('./cmds').length,
         eventsCount: fs.readdirSync('./events').length,
         threadsCount: Object.keys(JSON.parse(fs.readFileSync('./database/threads.json', 'utf8') || "{}")).length,

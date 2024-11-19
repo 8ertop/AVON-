@@ -44,6 +44,7 @@
     "node-cron": "^3.0.3",
     "node-schedule": "^2.1.1",
     "pastebin-api": "^7.0.0",
+    "pm2": "^5.4.3",
     "proxy-chain": "^2.5.3",
     "puppeteer-core": "^23.3.1",
     "puppeteer-extra": "^3.3.6",

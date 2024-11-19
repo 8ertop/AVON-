@@ -78,7 +78,7 @@ module.exports = {
                     `│ Nhà phát triển: ${commandInfo.dev || "Không xác định"}\n` +
                     `│ Thời gian chờ: ${commandInfo.cooldowns || "Không xác định"} giây\n` +
                     `│ Mô tả: ${commandInfo.info || "Không có mô tả"}\n` +
-                    `│ Cú pháp sử dụng: ${commandInfo.usages || "Không có cú pháp"}\n` +
+                    `│ cách sử dụng: ${commandInfo.usages || "Không có"}\n` +
                     `│ Cần Prefix: ${commandInfo.onPrefix !== undefined ? commandInfo.onPrefix : "Không xác định"}\n` +
                     `╰───────────◊`;
                 return api.sendMessage(helpMessage, event.threadID, event.messageID);

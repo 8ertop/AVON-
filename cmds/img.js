@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = {
-  name: "imagine",
+  name: "img",
   usedby: 0,
   info: "Tạo hình ảnh AI dựa trên mô tả văn bản",
   dev: "Jonell Magallanes",

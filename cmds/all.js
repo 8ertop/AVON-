@@ -13,7 +13,7 @@ module.exports = {
   
         const randomMessages = ["Alo", "Hú hú", "Éc éc"];
   
-        var body = (target.length != 0) ? target.join(" ") : randomMessages[Math.floor(Math.random() * randomMessages.length)]; 
+        var body = (target.length != 0) ? target.join(" ") :  [Math.floor(Math.random() * randomMessages.length)]; 
         var mentions = [], index = 0;
   
         for (const idUser of listUserID) {

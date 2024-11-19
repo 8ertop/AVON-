@@ -8,7 +8,7 @@ if (fs.existsSync(saveFile)) {
   badWordsActive = words;
 }
 
-const saveWarnings = path.join(__dirname, 'warnings.json');
+const saveWarnings = path.join(__dirname, 'json', 'warnings.json');
 
 if (fs.existsSync(saveWarnings)) {
   const warningsData = JSON.parse(fs.readFileSync(saveWarnings, "utf8"));

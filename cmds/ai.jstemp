@@ -23,7 +23,7 @@ module.exports = {
     dmUser: false,
     dev: "Jonell Magallanes",
     nickName: ["chatgpt", "gpt"],
-    info: "EDUCATIONAL",
+    info: "ai Gemini",
     onPrefix: true,
     cooldowns: 6,
 
