@@ -7,7 +7,7 @@ module.exports = {
     name: "video",
     usedby: 0,
     version: "1.0.0",
-    info: "Tải video có âm thanh",
+    info: "Tải video",
     onPrefix: true,
     dev: "Jonell Magallanes",
     cooldowns: 10,

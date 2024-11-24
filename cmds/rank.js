@@ -7,7 +7,11 @@ const userDataPath = path.join(__dirname, '../events/cache/userData.json');
 
 const imgurImages = [
     'https://imgur.com/WbcQRAd.png', 
-    'https://imgur.com/JgnjQOx.png'
+    'https://imgur.com/JgnjQOx.png',
+    'https://imgur.com/wTA22J2.png',
+    'https://imgur.com/0FtwVUa.png',
+    'https://imgur.com/bd2zNqC.png',
+    'https://imgur.com/g1LK5fZ.png'
 ];
 
 
@@ -100,7 +104,7 @@ function drawUserInfo(ctx, name, level, currentExp, requiredXp, rank) {
     ctx.shadowBlur = 20;
     
     ctx.font = 'bold 45px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif'; 
-    ctx.fillStyle = '#e74c3c'; 
+    ctx.fillStyle = '#ecf0f1'; 
     ctx.fillText(`${name.toUpperCase()}`, 310, 120); 
 
     ctx.font = 'bold 70px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
@@ -110,7 +114,7 @@ function drawUserInfo(ctx, name, level, currentExp, requiredXp, rank) {
     ctx.font = 'bold 80px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.fillText(`${level}`, 370, 210);
     ctx.font = 'bold 30px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
-    ctx.fillText(`Xếp Hạng`, 310, 255);
+    ctx.fillText(`Xếp Hạng`, 310, 257);
     ctx.font = 'bold 56px "segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.fillText(`#${rank}`,460, 270 );
 }
@@ -118,8 +122,8 @@ function drawUserInfo(ctx, name, level, currentExp, requiredXp, rank) {
 function drawProgressBar(ctx, currentExp, requiredXp) {
     const progressBarWidth = 500;
     const progressBarHeight = 30;
+    const borderRadius = 15;
     const progress = Math.min(currentExp / requiredXp, 1);
-    const radius = 15; 
 
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
     ctx.shadowBlur = 10;
@@ -128,43 +132,43 @@ function drawProgressBar(ctx, currentExp, requiredXp) {
 
     ctx.fillStyle = '#34495e';
     ctx.beginPath();
-    ctx.moveTo(50, 350);
-    ctx.lineTo(50 + progressBarWidth, 350);
-    ctx.quadraticCurveTo(50 + progressBarWidth, 350, 50 + progressBarWidth, 350 + radius);
-    ctx.lineTo(50 + progressBarWidth, 350 + progressBarHeight - radius);
-    ctx.quadraticCurveTo(50 + progressBarWidth, 350 + progressBarHeight, 50 + progressBarWidth - radius, 350 + progressBarHeight);
-    ctx.lineTo(50 + radius, 350 + progressBarHeight);
-    ctx.quadraticCurveTo(50, 350 + progressBarHeight, 50, 350 + progressBarHeight - radius);
-    ctx.lineTo(50, 350 + radius);
-    ctx.quadraticCurveTo(50, 350, 50 + radius, 350);
+    ctx.moveTo(50 + borderRadius, 350);
+    ctx.lineTo(50 + progressBarWidth - borderRadius, 350);
+    ctx.quadraticCurveTo(50 + progressBarWidth, 350, 50 + progressBarWidth, 350 + borderRadius);
+    ctx.lineTo(50 + progressBarWidth, 350 + progressBarHeight - borderRadius);
+    ctx.quadraticCurveTo(50 + progressBarWidth, 350 + progressBarHeight, 50 + progressBarWidth - borderRadius, 350 + progressBarHeight);
+    ctx.lineTo(50 + borderRadius, 350 + progressBarHeight);
+    ctx.quadraticCurveTo(50, 350 + progressBarHeight, 50, 350 + progressBarHeight - borderRadius);
+    ctx.lineTo(50, 350 + borderRadius);
+    ctx.quadraticCurveTo(50, 350, 50 + borderRadius, 350);
     ctx.closePath();
     ctx.fill();
 
     ctx.strokeStyle = '#ffffff';  
     ctx.lineWidth = 3; 
-    ctx.stroke();  
+    ctx.stroke();
 
     const progressGradient = ctx.createLinearGradient(0, 0, progressBarWidth, 0);
     progressGradient.addColorStop(0, '#e74c3c');
-    progressGradient.addColorStop(1, '#f1c40f'); 
+    progressGradient.addColorStop(1, '#f1c40f');
 
     ctx.fillStyle = progressGradient;
+
     ctx.beginPath();
-    ctx.moveTo(50 + radius, 350);
-    ctx.lineTo(50 + progress * progressBarWidth - radius, 350);
-    ctx.quadraticCurveTo(50 + progress * progressBarWidth, 350, 50 + progress * progressBarWidth, 350 + radius);
-    ctx.lineTo(50 + progress * progressBarWidth, 350 + progressBarHeight - radius);
-    ctx.quadraticCurveTo(50 + progress * progressBarWidth, 350 + progressBarHeight, 50 + progress * progressBarWidth - radius, 350 + progressBarHeight);
-    ctx.lineTo(50 + radius, 350 + progressBarHeight);
-    ctx.quadraticCurveTo(50, 350 + progressBarHeight, 50, 350 + progressBarHeight - radius);
-    ctx.lineTo(50, 350 + radius);
-    ctx.quadraticCurveTo(50, 350, 50 + radius, 350);
+    ctx.moveTo(50 + borderRadius, 350);
+    ctx.lineTo(50 + progress * progressBarWidth - borderRadius, 350);
+    if (progress > 0.98) {
+        ctx.lineTo(50 + progress * progressBarWidth, 350 + borderRadius);
+    }
+    ctx.quadraticCurveTo(50 + progress * progressBarWidth, 350, 50 + progress * progressBarWidth, 350 + borderRadius);
+    ctx.lineTo(50 + progress * progressBarWidth, 350 + progressBarHeight - borderRadius);
+    ctx.quadraticCurveTo(50 + progress * progressBarWidth, 350 + progressBarHeight, 50 + progress * progressBarWidth - borderRadius, 350 + progressBarHeight);
+    ctx.lineTo(50 + borderRadius, 350 + progressBarHeight);
+    ctx.quadraticCurveTo(50, 350 + progressBarHeight, 50, 350 + progressBarHeight - borderRadius);
+    ctx.lineTo(50, 350 + borderRadius);
+    ctx.quadraticCurveTo(50, 350, 50 + borderRadius, 350);
     ctx.closePath();
     ctx.fill();
-
-    ctx.strokeStyle = '#ffffff'; 
-    ctx.lineWidth = 3; 
-    ctx.stroke(); 
 
     ctx.font = '20px Arial';
     ctx.fillStyle = '#ecf0f1';
@@ -176,9 +180,11 @@ function drawProgressBar(ctx, currentExp, requiredXp) {
 
     ctx.fillText(text, textX, textY);
 }
+
+
 async function drawAvatar(ctx, senderID, level) {
     const avatarUrl = `https://graph.facebook.com/${senderID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
-    
+
     const avatarX = 50; 
     const avatarY = 80; 
     const avatarSize = 200; 
@@ -189,11 +195,35 @@ async function drawAvatar(ctx, senderID, level) {
         const avatar = await circleImage(avatarBuffer, avatarSize);
 
         const avatarImage = await loadImage(avatar);
+
+        ctx.lineWidth = 12;
+        let borderColor;
+        if (level >= 100) {
+            borderColor = '#e74c3c'; 
+        } else if (level >= 50) {
+            borderColor = '#f39c12'; 
+        } else if (level >= 20) {
+            borderColor = '#1abc9c'; 
+        } else if (level >= 10) {
+            borderColor = '#3498db'; 
+        } else if (level >= 3) {
+            borderColor = '#9b59b6'; 
+        } else {
+            borderColor = '#bdc3c7'; 
+        }
+        ctx.strokeStyle = borderColor;
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 5, 0, Math.PI * 2, true); // Vẽ vòng tròn viền
+        ctx.closePath();
+        ctx.stroke();
+
         ctx.drawImage(avatarImage, avatarX, avatarY, avatarSize, avatarSize);
+
     } catch (error) {
         console.log('Lỗi khi tải ảnh đại diện:', error.message);
     }
 }
+
 
 async function updateRankApi(senderID, name, currentExp, level, rank) {
     const requiredXp = calculateRequiredXp(level);

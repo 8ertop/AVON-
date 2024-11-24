@@ -4,7 +4,7 @@ const translate = require('translate-google');
 module.exports = {
     name: "fact",
     usedby: 0,
-    info: "Cung cấp một sự thật ngẫu nhiên bằng tiếng Việt",
+    info: "Cung cấp một sự thật ngẫu nhiên",
     dev: "Jonell Magallanes",
     onPrefix: true,
     usages: "fact",

@@ -23,15 +23,15 @@ try {
 }
 
 const notifyAdmins = async (api, threadID, action, senderID) => {
-    if (adminConfig.notilogs) {  // Check if notifications are enabled
+    if (adminConfig.notilogs) {  
         const groupName = await getGroupName(api, threadID);
         const addedOrKickedBy = await getUserName(api, senderID);
 
-        const notificationMessage = `🔔 𝗕𝗼𝘁 𝗥𝗲𝗰𝗼𝗿𝗱𝘀 𝗗𝗮𝘁𝗮 𝗡𝗼𝘁𝗶\n━━━━━━━━━━━━━━━━━━\n📝 Bot has been ${action} from ${groupName}\n🆔 ThreadID: ${threadID}\n🕜 Time: ${time}\n━━━━━━━━━━━━━━━━━━`;
+        const notificationMessage = `🔔 𝗧𝗵𝗼̂𝗻𝗴 𝗯𝗮́𝗼 𝗗𝘂̛̃ 𝗟𝗶𝗲̣̂𝘂 𝗕𝗼𝘁\n━━━━━━━━━━━━━━━━━━\n📝 Bot đã ${action} khỏi nhóm ${groupName}\n🆔 ID nhóm: ${threadID}\n🕜 Thời gian: ${time}\n━━━━━━━━━━━━━━━━━━`;
 
         if (Array.isArray(adminConfig.adminUIDs) && adminConfig.adminUIDs.length > 0) {
             for (const adminID of adminConfig.adminUIDs) {
-                // await api.sendMessage(notificationMessage, adminID); // Disabled for now
+                
             }
         } else {
             console.error("ID quản trị viên không được xác định hoặc không phải là một mảng.");
@@ -51,20 +51,20 @@ const logChatRecord = async (api, event) => {
     if (event.body) {
         console.log(logHeader);
         console.log(gradientText("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"));
-        console.log(`${boldText(gradientText(`┣➤ Nhóm: ${groupName}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ ID nhóm: ${threadID}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ ID Người dùng: ${senderID}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ nội dung: ${event.body}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ vào lúc: ${time}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 🌐 Nhóm: ${groupName}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 🆔 ID nhóm: ${threadID}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 👤 ID Người dùng: ${senderID}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ ✉️ Nội dung: ${event.body}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ ⏰ Vào lúc: ${time}`))}`);
         console.log(gradientText("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"));
     } else if (event.attachments || event.stickers) {
         console.log(logHeader);
         console.log(gradientText("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"));
-        console.log(`${boldText(gradientText(`┣➤ Nhóm: ${groupName}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ ID nhóm: ${threadID}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ ID Người dùng: ${senderID}`))}`);
-        console.log(`${boldText(gradientText(`┣➤ nội dung: ${userName} gửi 1 nhãn dán`))}`);
-        console.log(`${boldText(gradientText(`┣➤ vào lúc: ${time}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 🌐 Nhóm: ${groupName}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 🆔 ID nhóm: ${threadID}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 👤 ID Người dùng: ${senderID}`))}`);
+        console.log(`${boldText(gradientText(`┣➤ 🖼️ Nội dung: ${userName} gửi một nhãn dán 🟢`))}`);
+        console.log(`${boldText(gradientText(`┣➤ ⏰ Vào lúc: ${time}`))}`);
         console.log(gradientText("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"));
     }
 };

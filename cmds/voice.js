@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const qs = require('qs'); 
 
 module.exports = {
     name: "voice",
@@ -9,7 +10,7 @@ module.exports = {
     onPrefix: true,
     dmUser: false,
     nickName: ["voice", "voic"],
-    usages: "[ngôn ngữ] [văn bản]",
+    usages: "[giọng] [văn bản]",
     cooldowns: 5,
 
     onLaunch: async function ({ event, target, actions }) {
@@ -17,35 +18,56 @@ module.exports = {
             const { createReadStream, unlinkSync, stat } = require("fs-extra");
             const { resolve } = require("path");
 
-            const content = (event.type == "message_reply") ? event.messageReply.body : target.join(" ");
-            
-            const defaultLanguage = "vi";
-            let languageToSay = (["ru", "en", "ko", "ja", "tl", "fr"].some(item => content.indexOf(item) === 0)) 
-                ? content.slice(0, content.indexOf(" ")) 
-                : (global.config && global.config.language) ? global.config.language : defaultLanguage;
+            const content = (event.type == "message_reply") ? event.messageReply.body : target.join(" ").trim();
 
-            let msg = (languageToSay !== defaultLanguage) 
-                ? content.slice(3).trim() 
-                : content.trim();
-
-            if (!msg) {
+            if (!content) {
                 return await actions.reply("Vui lòng nhập văn bản cần chuyển thành giọng nói!");
             }
 
-            if (msg.length > 100) {
-                return await actions.reply("⚠️ Văn bản không được vượt quá 100 ký tự. Vui lòng nhập lại.");
+            if (content.length > 2000) {
+                return await actions.reply("⚠️ Văn bản không được vượt quá 2000 ký tự. Vui lòng nhập lại.");
+            }
+
+            const speakerId = ["1", "2", "3", "4"].includes(target[0]) ? target[0] : "1";
+            const textToSynthesize = (["1", "2", "3", "4"].includes(target[0])) 
+                ? content.slice(2).trim() 
+                : content;
+
+            if (!textToSynthesize) {
+                return await actions.reply("Văn bản đầu vào không được để trống.");
             }
 
             const filePath = resolve(__dirname, 'cache', `${event.threadID}_${event.senderID}.mp3`);
 
-            const response = await axios({
-                url: `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(msg)}&tl=${languageToSay}&client=tw-ob`,
+            const apiKey = "n69TU9q2eXnSiQqkmtcKai9cDIWiaj2o"; 
+            const response = await axios.post(
+                "https://api.zalo.ai/v1/tts/synthesize",
+                qs.stringify({
+                    input: textToSynthesize,
+                    speaker_id: speakerId,
+                    encode_type: 1, 
+                }),
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        apikey: apiKey
+                    }
+                }
+            );
+
+            if (response.data.error_code !== 0) {
+                return await actions.reply(`⚠️ Lỗi từ API: ${response.data.error_message}`);
+            }
+
+            const audioUrl = response.data.data.url;
+            const audioResponse = await axios({
+                url: audioUrl,
                 method: 'GET',
                 responseType: 'stream'
             });
 
             const writer = fs.createWriteStream(filePath);
-            response.data.pipe(writer);
+            audioResponse.data.pipe(writer);
 
             await new Promise((resolve, reject) => {
                 writer.on('finish', resolve);
@@ -54,7 +76,7 @@ module.exports = {
 
             const stats = await stat(filePath);
             const fileSizeInBytes = stats.size;
-            const maxSizeBytes = 80 * 1024 * 1024; 
+            const maxSizeBytes = 80 * 1024 * 1024;
 
             if (fileSizeInBytes > maxSizeBytes) {
                 unlinkSync(filePath);

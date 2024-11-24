@@ -2,6 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const yts = require('yt-search');
+const {isURL} = require('validator')
 
 module.exports = {
     name: "music",
@@ -35,6 +36,10 @@ module.exports = {
 
             const response = await axios.get(`https://ccprojectapis.ddns.net/api/music?url=${url}`);
             const downloadLink = response.data.data.link;
+
+            if (!downloadLink || !isURL(downloadLink))  {
+                throw new Error('API lỗi');
+            }
 
             const filePath = path.resolve(__dirname, 'cache', `${Date.now()}.mp3`);
             const fileStream = fs.createWriteStream(filePath);

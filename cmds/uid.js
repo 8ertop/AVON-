@@ -2,11 +2,11 @@ const axios = require('axios');
 
 module.exports = {
   name: "uid",
-  dev: "Akira",
+  dev: "HNT",
   info: "lấy UID facebook của người nào đó",
   onPrefix: false,
   dmUser: false,
-  usages: "gõ .UID [tag] or [reply]",
+  usages: "gõ .UID [tag], [reply] or .UID all",
   cooldowns: 0,
 
   onLaunch: async ({ api, event, target }) => {
@@ -22,6 +22,24 @@ module.exports = {
         return api.sendMessage(uid, event.threadID, event.messageID);
       }
 
+      if (target[0] === 'all') {
+   
+        const threadID = event.threadID;
+        const threadInfo = await api.getThreadInfo(threadID);
+
+        if (!threadInfo || !Array.isArray(threadInfo.participants)) {
+          console.log('Không thể lấy thông tin nhóm hoặc không có thành viên');
+          return api.sendMessage('Không thể lấy thông tin nhóm hoặc không có thành viên.', event.threadID, event.messageID);
+        }
+
+        let membersUID = '';
+        threadInfo.participants.forEach(member => {
+          membersUID += `UID của ${member.name}: ${member.userID}\n`;
+        });
+
+        return api.sendMessage(membersUID || 'Không tìm thấy thành viên trong nhóm.', event.threadID, event.messageID);
+      }
+
       if (event.type !== 'message_reply') {
         for (let i = 0; i < Object.keys(event.mentions).length; i++) {
           const mentionedUID = Object.keys(event.mentions)[i];
@@ -32,13 +50,11 @@ module.exports = {
 
       const input = target[0];
 
-      
       if (!isNaN(input)) {
         console.log('Input is an ID:', input);
         return api.sendMessage(input, event.threadID, event.messageID);
       }
 
-     
       const protocol = 'https:';
       const hostname = [
         'www.facebook.com',

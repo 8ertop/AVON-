@@ -8,7 +8,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Title, Ca
 
 module.exports = {
     name: 'btc',
-    info: 'Xem chứng khoán bitcoin',
+    info: 'Xem giá bitcoin',
     dev: 'Hoàng Ngọc Từ',
     onPrefix: false,
     dmUser: false,

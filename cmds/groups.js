@@ -13,7 +13,7 @@ const saveBannedData = () => {
 };
 
 module.exports = {
-    name: "groupthread",
+    name: "groups",
     usedby: 4,
     info: "Cấm hoặc bỏ cấm nhóm trò chuyện",
     onPrefix: true,
@@ -27,7 +27,7 @@ module.exports = {
         if (action === 'ban') {
             bannedThreads[targetID] = { reason };
             saveBannedData();
-            return api.sendMessage(`𝗧𝗵𝗿𝗲𝗮𝗱 𝗕𝗮𝗻 𝗖𝗼𝗺𝗽𝗹𝗲𝘁𝗲\n━━━━━━━━━━━━━━━━━━\nNhóm ${targetID} đã bị cấm. Lý do: ${reason}`, event.threadID, () => {
+            return api.sendMessage(`Ban Thread Finished\n━━━━━━━━━━━━━━━━━━\nNhóm ${targetID} đã bị cấm. Lý do: ${reason}`, event.threadID, () => {
                 process.exit(1);
             });
 
@@ -35,11 +35,11 @@ module.exports = {
             if (bannedThreads[targetID]) {
                 delete bannedThreads[targetID];
                 saveBannedData();
-                return api.sendMessage(`𝗧𝗵𝗿𝗲𝗮𝗱 𝗨𝗻𝗯𝗮𝗻 𝗖𝗼𝗺𝗽𝗹𝗲𝘁𝗲𝗱\n━━━━━━━━━━━━━━━━━━\nNhóm ${targetID} đã được bỏ cấm.`, event.threadID, () => {
+                return api.sendMessage(`Unban Thread Processed\n━━━━━━━━━━━━━━━━━━\nNhóm ${targetID} đã được bỏ cấm.`, event.threadID, () => {
                     process.exit(1);
                 });
             } else {
-                return api.sendMessage(`𝗧𝗵𝗿𝗲𝗮𝗱 𝗚𝗰𝗕𝗮𝗻 𝗠𝗮𝗻𝗮𝗴𝗲𝗿\n━━━━━━━━━━━━━━━━━━\nNhóm ${targetID} không bị cấm.`, event.threadID);
+                return api.sendMessage(`GCBan Thread Control\n━━━━━━━━━━━━━━━━━━\nNhóm ${targetID} không bị cấm.`, event.threadID);
             }
         } else {
             return api.sendMessage("Hành động không hợp lệ. Sử dụng 'ban' để cấm nhóm hoặc 'unban' để bỏ cấm nhóm.", event.threadID);

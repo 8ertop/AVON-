@@ -1,7 +1,11 @@
 const os = require('os');
 const { exec } = require('child_process');
 const util = require('util');
+const fs = require('fs');
 const execPromise = util.promisify(exec);
+
+const threadsDB = JSON.parse(fs.readFileSync("./database/threads.json", "utf8") || "{}");
+const usersDB = JSON.parse(fs.readFileSync("./database/users.json", "utf8") || "{}");
 
 let commandCount = 0;
 const botStartTime = Date.now();
@@ -11,14 +15,20 @@ module.exports = {
     info: "Xem thời gian bot đã online và thông tin hệ thống.",
     dev: "HNT",
     onPrefix: false,
-    dmUser: false, 
-    nickName: ["uptime", "thongtinhệthống"], 
+    dmUser: false,
+    nickName: ["uptime", "thongtinhệthống"],
     usages: "uptime",
-    cooldowns: 10, 
+    cooldowns: 10,
 
-    onLaunch: async function ({ api, event }) {
+    onLaunch: async function ({ api, event, actions }) {
         const { threadID, messageID } = event;
 
+        const userCount = Object.keys(usersDB).length;
+        const threadCount = Object.keys(threadsDB).length;
+
+        const replyMessage = await actions.reply("Đang tải dữ liệu.......");
+        await sleep(3000);  
+        
         let currentTime = Date.now();
         let uptime = currentTime - botStartTime;
         let seconds = Math.floor((uptime / 1000) % 60);
@@ -26,9 +36,9 @@ module.exports = {
         let hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
         let days = Math.floor(uptime / (1000 * 60 * 60 * 24));
 
-        let memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; 
+        let memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
         let cpuLoad = os.loadavg()[0].toFixed(2); 
-        
+
         const ping = await getPing();
         const systemInfo = await getSystemInfo();
         const nodeVersion = await getNodeVersion();
@@ -43,32 +53,24 @@ module.exports = {
         uptimeMessage += `💾 Bộ nhớ sử dụng: ${memoryUsage.toFixed(2)} MB\n`;
         uptimeMessage += `⚙️ CPU Load: ${cpuLoad}%\n`;
         uptimeMessage += `=======================\n`;
+        uptimeMessage += `👤 Người dùng: ${userCount}\n`;
+        uptimeMessage += `👥 Nhóm: ${threadCount}\n`;
+        uptimeMessage += `=======================\n`;
         uptimeMessage += `🖥️ Hệ điều hành: ${systemInfo.platform} (${systemInfo.arch})\n`;
         uptimeMessage += `- Phiên bản: ${systemInfo.release}\n`;
         uptimeMessage += `- Tên máy: ${systemInfo.hostname}\n`;
         uptimeMessage += `- CPU Model: ${systemInfo.cpuModel} (${systemInfo.coreCount} core(s), ${systemInfo.cpuSpeed} MHz)\n`;
-        uptimeMessage += `- Tải CPU: ${systemInfo.loadAverage.join(', ')}\n`;
-        uptimeMessage += `- Dung lượng bộ nhớ: ${systemInfo.totalMemory} GB (Trên tổng ${systemInfo.totalMemory} GB)\n`;
+        uptimeMessage += `- Tổng bộ nhớ: ${systemInfo.totalMemory} GB\n`;
         uptimeMessage += `- Bộ nhớ còn lại: ${systemInfo.freeMemory} GB\n`;
         uptimeMessage += `- Bộ nhớ đã sử dụng: ${systemInfo.usedMemory} GB\n`;
         uptimeMessage += `=======================\n`;
         uptimeMessage += `🌐 Ping: ${ping}\n`;
         uptimeMessage += `=======================\n`;
         uptimeMessage += `🔢 Node.js Version: ${nodeVersion}\n`;
-
-        const maxUptime = 86400000; 
-        const uptimeBar = createProgressBar(maxUptime, uptime);
-        uptimeMessage += `=======================\n📅 Progress đến 24h: ${uptimeBar}\n`;
-
-        return api.sendMessage(uptimeMessage, threadID, messageID);
+        
+        await actions.edit(uptimeMessage, replyMessage.messageID);
     }
 };
-
-function createProgressBar(total, current, length = 17) {
-    const filledLength = Math.round((current / total) * length);
-    const bar = "█".repeat(filledLength) + "░".repeat(length - filledLength);
-    return `[${bar}] ${(current / total * 100).toFixed(2)}%`;
-}
 
 async function getPing() {
     try {
@@ -82,6 +84,10 @@ async function getPing() {
     }
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function getSystemInfo() {
     try {
         const platform = os.platform();
@@ -92,11 +98,10 @@ async function getSystemInfo() {
         const coreCount = os.cpus().length;
         const cpuSpeed = os.cpus()[0].speed;
         const loadAverage = os.loadavg();
-        const totalMemory = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2); // GB
-        const freeMemory = (os.freemem() / (1024 * 1024 * 1024)).toFixed(2); // GB
+        const totalMemory = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2); 
+        const freeMemory = (os.freemem() / (1024 * 1024 * 1024)).toFixed(2); 
         const usedMemory = (totalMemory - freeMemory).toFixed(2);
         const uptime = os.uptime();
-        const networkInterfaces = os.networkInterfaces();
 
         return {
             platform,
@@ -106,12 +111,10 @@ async function getSystemInfo() {
             cpuModel,
             coreCount,
             cpuSpeed,
-            loadAverage,
             totalMemory,
             freeMemory,
             usedMemory,
             uptime,
-            networkInterfaces
         };
     } catch (error) {
         return {
@@ -122,12 +125,10 @@ async function getSystemInfo() {
             cpuModel: 'N/A',
             coreCount: 'N/A',
             cpuSpeed: 'N/A',
-            loadAverage: 'N/A',
             totalMemory: 'N/A',
             freeMemory: 'N/A',
             usedMemory: 'N/A',
             uptime: 'N/A',
-            networkInterfaces: 'N/A'
         };
     }
 }

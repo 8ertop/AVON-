@@ -146,7 +146,7 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
                 if (!cooldowns[commandName]) cooldowns[commandName] = {};
                 const now = Date.now();
                 const timestamps = cooldowns[commandName];
-                const cooldownAmount = (command.cooldowns || 20) * 1000;
+                const cooldownAmount = (command.cooldowns || 5) * 1000;
 
                 if (timestamps[senderID]) {
                     const expirationTime = timestamps[senderID] + cooldownAmount;

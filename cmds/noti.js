@@ -12,7 +12,7 @@ module.exports = {
     let senderInfo = await api.getUserInfo(event.senderID);
     let senderName = senderInfo[event.senderID].name;
 
-    const jonell = `👤 𝗡𝗼𝘁𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻\n━━━━━━━━━━━━━━━━━━\n${content}\n\nDeveloper: ${senderName}`;
+    const jonell = `👤 THÔNG BÁO \n━━━━━━━━━━━━━━━━━━\n${content}\n\nDeveloper: ${senderName}`;
 
     try {
       let threads = await api.getThreadList(500, null, ['INBOX']);
@@ -24,7 +24,7 @@ module.exports = {
         api.sendMessage(jonell, id);
       });
 
-      api.sendMessage(`📝 𝗦𝗲𝗻𝗱𝗶𝗻𝗴 𝗧𝗵𝗿𝗲𝗮𝗱𝘀 𝗥𝗲𝘀𝘂𝗹𝘁 \n━━━━━━━━━━━━━━━━━━\nNotification sent to ${threadIDs.length} threads.`, event.threadID);
+      api.sendMessage(`📝 PHẢN HỒI \n━━━━━━━━━━━━━━━━━━\nPhản Hồi từ nhóm ${threadIDs.length}.`, event.threadID);
     } catch (error) {
       console.error('[ERROR]', error);
       api.sendMessage('An error occurred while sending the notifications.', event.threadID);

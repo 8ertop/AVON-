@@ -8,14 +8,14 @@ if (fs.existsSync(saveFile)) {
   badWordsActive = words;
 }
 
-const saveWarnings = path.join(__dirname, 'json', 'warnings.json');
+const saveWarnings = path.join(__dirname,  'json', 'warnings.json');
 
 if (fs.existsSync(saveWarnings)) {
   const warningsData = JSON.parse(fs.readFileSync(saveWarnings, "utf8"));
   warnings = warningsData;
 }
 
-const saveWarningsCount = path.join(__dirname,'json', 'warningsCount.json');
+const saveWarningsCount = path.join(__dirname, 'json', 'warningsCount.json');
 let warningsCount = {};
 if (fs.existsSync(saveWarningsCount)) {
   const warningsCountData = JSON.parse(fs.readFileSync(saveWarningsCount, "utf8"));
@@ -35,7 +35,7 @@ const loadBannedWords = threadID => {
 module.exports = {
     name: "badwords", 
     usedby: 0,
-    info: "Quản lý danh sách từ bị cấm và tùy chọn để kích hoạt/tắt lọc",
+    info: "Quản lý danh sách từ bị cấm",
     onPrefix: true,
     dev: "Jonell Magallanes",
     cooldowns: 6,
