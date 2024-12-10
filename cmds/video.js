@@ -5,11 +5,10 @@ const ytdl = require('@distube/ytdl-core');
 
 module.exports = {
     name: "video",
-    usedby: 0,
     version: "1.0.0",
-    info: "Tải video",
+    info: "Tải video có âm thanh",
     onPrefix: true,
-    dev: "Jonell Magallanes",
+    dev: "HNT",
     cooldowns: 10,
 
     onLaunch: async function ({ api, event, target }) {
@@ -31,14 +30,25 @@ module.exports = {
 
             const { title, url } = firstResult;
 
-            await api.editMessage(`⏱️ | Đã tìm thấy video: "${title}". Đang tải xuống...`, findingMessage.messageID);
+            await api.editMessage(`⏱️ | Đã tìm thấy video: "${title}". Đang tải xuống...`, findingMessage.messageID, event.threadID);
 
             const filePath = path.resolve(__dirname, 'cache', `${Date.now()}-${title}.mp4`);
 
+            const videoInfo = await ytdl.getInfo(url);
+            const formats = videoInfo.formats;
+
+            const videoFormat = ytdl.chooseFormat(formats, { quality: 'highestvideo' });
+            const audioFormat = ytdl.chooseFormat(formats, { quality: 'highestaudio' });
+
+            if (!videoFormat || !audioFormat) {
+                await api.editMessage(`❌ | Không thể tìm thấy video hoặc âm thanh với chất lượng cao nhất.`, findingMessage.messageID, event.threadID);
+                return;
+            }
+
             const responseStream = ytdl(url, {
-                filter: 'audioandvideo',  
-                quality: 'highest',       
-                highWaterMark: 1 << 25   
+                filter: 'audioandvideo', 
+                format: videoFormat,
+                highWaterMark: 1 << 25
             });
 
             const fileStream = fs.createWriteStream(filePath);
@@ -61,7 +71,7 @@ module.exports = {
                     attachment: fs.createReadStream(filePath)
                 }, event.threadID);
 
-                fs.unlinkSync(filePath);
+                fs.unlinkSync(filePath);  
                 api.unsendMessage(findingMessage.messageID);
             });
 

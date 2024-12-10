@@ -23,7 +23,7 @@ Hàm `onLaunch` được thực thi khi lệnh được gọi. Nó có thể x�
 
 **Ví dụ:**
 ```javascript
-onLaunch: async function ({ api, event, actions }) {
+onLaunch: async function ({ api, event, ac  tions }) {
     const message = "Lệnh đã được thực thi!";
     await actions.reply(message);
 }

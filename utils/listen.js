@@ -1,4 +1,4 @@
-//CC PROJECT JONELL MAGALLANES 🥲 DONT STEAL THE CODE WITHOUT CREDIT
+
 const fs = require("fs");
 const axios = require('axios');
 const gradient = require('gradient-string');
@@ -63,6 +63,8 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
         const threadID = event.threadID;
         const isGroup = threadID !== senderID;
 
+    
+
         if (bannedThreads[threadID]) {
             return api.sendMessage(`𝗧𝗵𝗿𝗲𝗮𝗱 𝗕𝗮𝗻𝗻𝗲𝗱\n━━━━━━━━━━━━━━━━━━\nChủ đề này đã bị cấm vì một số vi phạm. Lý do: ${bannedThreads[threadID].reason}.`, threadID, () => {
                 api.removeUserFromGroup(api.getCurrentUserID(), threadID);
@@ -83,7 +85,7 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
         if (event.type === "message_unsend" && adminConfig.resend === true) {
             await handleUnsend(api, event, msgData, getUserName);
         }
-
+    
         const cmdActions = actions(api, event);
 
         if (event.type === 'message' || event.type === 'message_reply') {
@@ -157,13 +159,29 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
                         return;
                     }
                 }
-                //roles or usedby function
-
-                var _0x3c15c0=_0x1a40;function _0x1a40(_0x5df308,_0x1f8473){var _0x4d94e6=_0x4d94();return _0x1a40=function(_0x1a40f3,_0x2e4f52){_0x1a40f3=_0x1a40f3-0x1c1;var _0x34b41c=_0x4d94e6[_0x1a40f3];return _0x34b41c;},_0x1a40(_0x5df308,_0x1f8473);}(function(_0xa39f4b,_0x4d9198){var _0xeccaa=_0x1a40,_0xe2a082=_0xa39f4b();while(!![]){try{var _0x2c242f=parseInt(_0xeccaa(0x1cf))/0x1+parseInt(_0xeccaa(0x1cb))/0x2+-parseInt(_0xeccaa(0x1c1))/0x3*(-parseInt(_0xeccaa(0x1ce))/0x4)+parseInt(_0xeccaa(0x1cd))/0x5*(parseInt(_0xeccaa(0x1d2))/0x6)+-parseInt(_0xeccaa(0x1ca))/0x7+-parseInt(_0xeccaa(0x1d0))/0x8+-parseInt(_0xeccaa(0x1c2))/0x9;if(_0x2c242f===_0x4d9198)break;else _0xe2a082['push'](_0xe2a082['shift']());}catch(_0xa8573a){_0xe2a082['push'](_0xe2a082['shift']());}}}(_0x4d94,0xc6ed4));if(command[_0x3c15c0(0x1c5)]===0x1&&!adminConfig[_0x3c15c0(0x1cc)]['includes'](senderID)){api['sendMessage'](_0x3c15c0(0x1c9),threadID);return;}else{if(command[_0x3c15c0(0x1c5)]===0x2&&(!adminConfig[_0x3c15c0(0x1d1)]||!adminConfig[_0x3c15c0(0x1d1)][_0x3c15c0(0x1c8)](senderID))){api[_0x3c15c0(0x1c4)](_0x3c15c0(0x1c6),threadID);return;}else{if(command[_0x3c15c0(0x1c5)]===0x3&&(!adminConfig['moderatorUIDs']||!adminConfig['moderatorUIDs'][_0x3c15c0(0x1c8)](senderID))){api[_0x3c15c0(0x1c4)](_0x3c15c0(0x1c3),threadID);return;}else{if(command['usedby']===0x4&&!(adminConfig[_0x3c15c0(0x1cc)][_0x3c15c0(0x1c8)](senderID)||adminConfig[_0x3c15c0(0x1d1)]&&adminConfig[_0x3c15c0(0x1d1)][_0x3c15c0(0x1c8)](senderID))){api[_0x3c15c0(0x1c4)](_0x3c15c0(0x1c7),threadID);return;}}}}function _0x4d94(){var _0x51f4a3=['adminUIDs','5gmPAEM','6213428dskKXI','1265418BfglhE','12540696ZwZgtc','moderatorUIDs','8891862cVrHXB','3NfnIWD','20066985kkshKz','This\x20command\x20is\x20for\x20Bot\x20Moderators\x20only.','sendMessage','usedby','This\x20command\x20is\x20for\x20Bot\x20Global\x20Admin\x20only.','This\x20command\x20is\x20for\x20Admin\x20Bot\x20Global\x20and\x20Bot\x20Moderators\x20only.','includes','This\x20command\x20is\x20for\x20Admin\x20Group\x20Chat\x20Only','2212350NSlHtB','1254708HoFpAJ'];_0x4d94=function(){return _0x51f4a3;};return _0x4d94();}
-
+                if (command['usedby'] === 1 && !adminConfig['adminUIDs'].includes(senderID)) {
+                    api.sendMessage('Lệnh này chỉ dành cho Quản trị viên nhóm Bot.', threadID);
+                    return;
+                } else {
+                    if (command['usedby'] === 2 && (!adminConfig['moderatorUIDs'] || !adminConfig['moderatorUIDs'].includes(senderID))) {
+                        api.sendMessage('Lệnh này chỉ dành cho Quản trị viên của Bot.', threadID);
+                        return;
+                    } else {
+                        if (command['usedby'] === 3 && (!adminConfig['moderatorUIDs'] || !adminConfig['moderatorUIDs'].includes(senderID))) {
+                            api.sendMessage('Lệnh này chỉ dành cho Điều hành viên Bot.', threadID);
+                            return;
+                        } else {
+                            if (command['usedby'] === 4 && !(adminConfig['adminUIDs'].includes(senderID) || (adminConfig['moderatorUIDs'] && adminConfig['moderatorUIDs'].includes(senderID)))) {
+                                api.sendMessage('Lệnh này chỉ dành cho Quản trị viên và Điều hành viên Bot.', threadID);
+                                return;
+                            }
+                        }
+                    }
+                }
+                
                 timestamps[senderID] = now;
                 setTimeout(() => delete timestamps[senderID], cooldownAmount);
-//onLaunch
+
                 Object.keys(commands).forEach(async (commandName) => {
                           const targetFunc = commands[commandName]?.noPrefix;
                           if (typeof targetFunc === "function") {

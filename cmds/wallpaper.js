@@ -51,7 +51,7 @@ async function downloadImage(url, outputPath, retries = 3) {
 
 module.exports = {
     name: 'wallpaper',
-    info: 'Gửi 4 hình nền đẹp cho Windows hoặc điện thoại.',
+    info: 'Gửi 4 hình nền đẹp cho Desktop hoặc điện thoại.',
     dev: 'HNT',
     onPrefix: true, 
     dmUser: false, 

@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = {
-    name: "setfrefix",
+    name: "setprefix",
     usedby: 4,
     info: "Thay đổi tiền tố lệnh của bot",
     dev: "HNT",

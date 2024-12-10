@@ -3,11 +3,11 @@ module.exports = {
   usedby: 2,
   onPrefix: true,
   dev: "Jonell Magallanes",
-  info: "Sending notification from developer",
+  info: "Tin nhắn từ Admin",
   cooldowns: 30,
   onLaunch: async function({ api, event, target }) {
     const content = target.join(" ");
-    if (!content) return api.sendMessage("Please enter a notification message.", event.threadID);
+    if (!content) return api.sendMessage("Nhập văn bản PLS.", event.threadID);
 
     let senderInfo = await api.getUserInfo(event.senderID);
     let senderName = senderInfo[event.senderID].name;

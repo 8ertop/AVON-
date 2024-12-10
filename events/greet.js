@@ -1,31 +1,14 @@
-const moment = require('moment'); 
+const moment = require('moment');
 
 module.exports = {
     name: "greet", 
-    info: "Tự động phản hồi lời chào và tạm biệt", 
-    dev: "HNT", 
-    onPrefix: false, 
-    dmUser: true,
-    usages: "Tự động hoạt động khi người dùng gửi từ khóa chào hoặc tạm biệt",
-    cooldowns: 0,
-    onEvents: async function ({ event, api, Users }) {
+    prog: "HNT",
+    ver: 1.1,
+    onEvents: async function ({ event, api }) {
         const greetKeywords = ["hello", "hi", "hai", "chào", "chao", "hí", "híí", "hì", "hìì", "lô", "hii", "helo", "hê nhô"];
         const byeKeywords = ["bye", "bai", "off", "byee", "pai", "paii"];
-        
-        const botUIDs = ["100056955484415", "100040203282108", "100092325757607"];
-        
-        const greetStickerData = [
-            "789355237820057",
-            "445625802303278",
-            "1554246411471073",
-            "1151376801549337"
-        ];
-
-        const byeStickerData = [
-            "629261957190121",
-            "657500430999881",
-            "144885315685735"
-        ];
+        const greetStickerData = ["789355237820057", "445625802303278", "1554246411471073", "1151376801549337"];
+        const byeStickerData = ["629261957190121", "657500430999881", "144885315685735"];
 
         const currentHour = moment().hour();
 
@@ -82,16 +65,16 @@ module.exports = {
             return byeBodiesEvening[Math.floor(Math.random() * byeBodiesEvening.length)];
         };
 
-        const { body, threadID, senderID, messageID } = event;
+        const { body, threadID, messageID } = event;
 
-        if (body && !botUIDs.includes(senderID)) {
+        if (body) { 
             const lowerBody = body.trim().toLowerCase();
-            
+
             if (greetKeywords.includes(lowerBody)) {
                 const greetMessage = getGreetMessage(); 
                 const randomGreetSticker = greetStickerData[Math.floor(Math.random() * greetStickerData.length)];
 
-                api.sendMessage({ body: greetMessage }, threadID, (err, info) => {
+                api.sendMessage({ body: greetMessage }, threadID, (err) => {
                     if (!err) {
                         setTimeout(() => {
                             api.sendMessage({ sticker: randomGreetSticker }, threadID);
@@ -104,7 +87,7 @@ module.exports = {
                 const byeMessage = getByeMessage(); 
                 const randomByeSticker = byeStickerData[Math.floor(Math.random() * byeStickerData.length)];
 
-                api.sendMessage({ body: byeMessage }, threadID, (err, info) => {
+                api.sendMessage({ body: byeMessage }, threadID, (err) => {
                     if (!err) {
                         setTimeout(() => {
                             api.sendMessage({ sticker: randomByeSticker }, threadID);
