@@ -3,7 +3,7 @@
 
     global.balance = global.balance || {};
     const dataFile = path.join(__dirname, '..', 'database', 'currencies.json');
-    const quyFilePath  = path.join(__dirname, '..', 'cmds', 'json', 'quy.json');
+    const quyFilePath  = path.join(__dirname, '..', 'commands', 'json', 'quy.json');
 
     async function loadData() {
         try {

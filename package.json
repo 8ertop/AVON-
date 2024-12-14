@@ -61,6 +61,8 @@
     "sentiment": "^5.0.2",
     "simple-youtube-api": "^5.2.1",
     "socket.io": "^4.7.5",
+    "streamifier": "^0.1.1",
+    "tinygradient": "^1.1.5",
     "tough-cookie": "^5.0.0",
     "tough-cookie-file-store": "^2.0.3",
     "translate-google": "^1.5.0",
