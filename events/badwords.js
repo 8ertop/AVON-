@@ -14,7 +14,7 @@ if (fs.existsSync(saveWarnings)) {
   const warningsData = JSON.parse(fs.readFileSync(saveWarnings, "utf8"));
   warnings = warningsData;
 }
-
+  
 const saveWarningsCount = `./commands/json/warningsCount.json`;
 let warningsCount = {};
 if (fs.existsSync(saveWarningsCount)) {

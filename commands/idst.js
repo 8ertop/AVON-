@@ -2,7 +2,7 @@ module.exports = {
     name: "idst", 
     info: "Lấy ID sticker khi trả lời một tin nhắn chứa sticker", 
     dev: "HNT", 
-    usedby: 2,
+    usedby: 2,  
     onPrefix: true, 
     dmUser: true,
     usages: "Trả lời sticker để lấy ID, hoặc cung cấp ID sticker để bot gửi sticker đó",

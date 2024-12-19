@@ -8,7 +8,7 @@ module.exports = {
   name: 'removebg',
   info: 'Tách Background ảnh',
   dev: 'HNT',
-  onPrefix: true,
+  onPrefix: false,
   dmUser: false,
   nickName: ['removebg'],
   usages: 'Reply ảnh để tách Background',
@@ -48,6 +48,9 @@ module.exports = {
     const outputPath = path.resolve(__dirname, 'cache', 'photo_removed_bg.png');
 
     try {
+      
+      const waitMessage = await actions.reply("[⏳]➜ Đang tách background ảnh, vui lòng chờ một chút...");
+
       await image({ url: content, dest: inputPath });
 
       const formData = new FormData();
@@ -71,17 +74,27 @@ module.exports = {
       }
 
       fs.writeFileSync(outputPath, response.data);
+
       await actions.reply({ body: successMessage, attachment: fs.createReadStream(outputPath) });
+
+      setTimeout(() => {
+        api.unsendMessage(waitMessage.messageID);
+      }, 3000); 
 
       fs.unlinkSync(inputPath);
       fs.unlinkSync(outputPath);
 
     } catch (error) {
       console.error('Lỗi:', error);
-      await actions.reply(`[❗]➜ Đã xảy ra lỗi: ${error.message}. Vui lòng kiểm tra lại API Key hoặc thử lại sau.`);
       
+      await actions.reply(`[❗]➜ Đã xảy ra lỗi: ${error.message}. Vui lòng kiểm tra lại API Key hoặc thử lại sau.`);
+
       if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      
+      if (waitMessage && waitMessage.messageID) {
+        api.unsendMessage(waitMessage.messageID);
+      }
     }
   }
 };

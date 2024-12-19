@@ -3,7 +3,7 @@ const { updateBalance, getBalance, saveData } = require('../utils/currencies');
 module.exports = {
     name: "pay",
     dev: "HNT", 
-    info: "Chuyển tiền cho người khác với thuế 1%.",
+    info: "Chuyển tiền cho người khác.",
     onPrefix: true,
     usages: ".pay <số tiền>: Chuyển tiền cho người dùng được reply.",
     cooldowns: 0,

@@ -136,7 +136,7 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
                     api.sendMessage(`Lệnh này yêu cầu prefix: ${adminConfig.prefix}${command.name}`, event.threadID);
                     return;
                 } else if (!command.onPrefix && isPrefixed) {
-                    api.sendMessage(`Lệnh này không yêu cầu prefix: ${command.name}`, event.threadID);
+                    api.sendMessage(`Lệnh này không yêu cầu prefix:\n bỏ dấu đi gõ '${command.name}'`, event.threadID);
                     return;
                 }
 

@@ -48,7 +48,6 @@ async function downloadImage(url, outputPath, retries = 3) {
         }
     }
 }
-
 module.exports = {
     name: 'wallpaper',
     info: 'Gửi 4 hình nền đẹp cho Desktop hoặc điện thoại.',
@@ -62,8 +61,11 @@ module.exports = {
     onLaunch: async function ({ api, event }) {
         const { threadID, messageID } = event;
 
+        let notifyMessageID = null;
+
         try {
-            api.sendMessage(`[🔄]➜ Vui lòng đợi hệ thống cung cấp ảnh...`, threadID); 
+            const notifyMessage = await api.sendMessage(`[🔄]➜ Vui lòng đợi hệ thống cung cấp ảnh...`, threadID);
+            notifyMessageID = notifyMessage.messageID; 
 
             const imageUrls = await getRandomWallpapers();
             const outputPaths = imageUrls.map((_, index) => path.resolve(cacheDir, `wallpaper${index + 1}.jpg`));
@@ -88,6 +90,10 @@ module.exports = {
                 throw new Error('Không thể tải bất kỳ hình ảnh nào.');
             }
 
+            if (notifyMessageID) {
+                api.unsendMessage(notifyMessageID);
+            }
+
             const attachments = validOutputPaths.map(filePath => fs.createReadStream(filePath));
 
             const successMessage = `📱🌟 Hình nền đẹp cho bạn! 🌟📱\n━━━━━━━━━━━━━━━\n[✔️]➜ ${successfulDownloads} hình nền đã được gửi.`;
@@ -100,9 +106,14 @@ module.exports = {
                         console.error(`Không thể xóa tệp ${filePath}: ${unlinkError.message}`);
                     }
                 });
-            });
+            }); 
 
         } catch (error) {
+       
+            if (notifyMessageID) {
+                api.unsendMessage(notifyMessageID);
+            }
+
             api.sendMessage(`[❗]➜ Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại sau.`, threadID, messageID);
         }
     }

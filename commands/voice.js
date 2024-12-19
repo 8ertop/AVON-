@@ -1,7 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const qs = require('qs'); 
+const qs = require('qs');
 
 module.exports = {
     name: "voice",
@@ -16,62 +16,74 @@ module.exports = {
     onLaunch: async function ({ event, target, actions }) {
         try {
             const { createReadStream, unlinkSync, stat } = require("fs-extra");
-            const { resolve } = require("path");
 
             const content = (event.type == "message_reply") ? event.messageReply.body : target.join(" ").trim();
-
             if (!content) {
                 return await actions.reply("Vui lòng nhập văn bản cần chuyển thành giọng nói!");
             }
-
             if (content.length > 2000) {
                 return await actions.reply("⚠️ Văn bản không được vượt quá 2000 ký tự. Vui lòng nhập lại.");
             }
 
             const speakerId = ["1", "2", "3", "4"].includes(target[0]) ? target[0] : "1";
-            const textToSynthesize = (["1", "2", "3", "4"].includes(target[0])) 
-                ? content.slice(2).trim() 
+            const textToSynthesize = (["1", "2", "3", "4"].includes(target[0]))
+                ? content.slice(2).trim()
                 : content;
 
             if (!textToSynthesize) {
                 return await actions.reply("Văn bản đầu vào không được để trống.");
             }
 
-            const filePath = resolve(__dirname, 'cache', `${event.threadID}_${event.senderID}.mp3`);
+            const filePath = path.join(__dirname, 'cache', `${event.threadID}_${event.senderID}.mp3`);
 
-            const apiKey = "n69TU9q2eXnSiQqkmtcKai9cDIWiaj2o"; 
-            const response = await axios.post(
-                "https://api.zalo.ai/v1/tts/synthesize",
-                qs.stringify({
-                    input: textToSynthesize,
-                    speaker_id: speakerId,
-                    encode_type: 1, 
-                }),
-                {
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        apikey: apiKey
+            const apiKey = "n69TU9q2eXnSiQqkmtcKai9cDIWiaj2o";
+            let response;
+            try {
+                response = await axios.post(
+                    "https://api.zalo.ai/v1/tts/synthesize",
+                    qs.stringify({
+                        input: textToSynthesize,
+                        speaker_id: speakerId,
+                        encode_type: 1,
+                    }),
+                    {
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            apikey: apiKey
+                        }
                     }
-                }
-            );
+                );
+            } catch (apiError) {
+                console.error("API Request Error:", apiError.message);
+                return await actions.reply("⚠️ Không thể kết nối đến API. Vui lòng thử lại sau.");
+            }
 
             if (response.data.error_code !== 0) {
                 return await actions.reply(`⚠️ Lỗi từ API: ${response.data.error_message}`);
             }
 
             const audioUrl = response.data.data.url;
-            const audioResponse = await axios({
-                url: audioUrl,
-                method: 'GET',
-                responseType: 'stream'
-            });
+            let audioResponse;
+            try {
+                audioResponse = await axios({
+                    url: audioUrl,
+                    method: 'GET',
+                    responseType: 'stream'
+                });
+            } catch (downloadError) {
+                console.error("Audio Download Error:", downloadError.message);
+                return await actions.reply("⚠️ Không thể tải xuống tệp âm thanh. Vui lòng thử lại sau.");
+            }
 
             const writer = fs.createWriteStream(filePath);
             audioResponse.data.pipe(writer);
 
             await new Promise((resolve, reject) => {
                 writer.on('finish', resolve);
-                writer.on('error', reject);
+                writer.on('error', (err) => {
+                    console.error("File Write Error:", err.message);
+                    reject(err);
+                });
             });
 
             const stats = await stat(filePath);
@@ -84,9 +96,9 @@ module.exports = {
             }
 
             await actions.reply({ attachment: createReadStream(filePath) });
-            unlinkSync(filePath);
+            unlinkSync(filePath); 
         } catch (error) {
-            console.error(error);
+            console.error("Unexpected Error:", error.message);
             await actions.reply("Đã xảy ra lỗi khi thực hiện chuyển văn bản thành giọng nói.");
         }
     }
