@@ -4,7 +4,7 @@ const adminConfig = JSON.parse(fs.readFileSync('admin.json', 'utf8'));
 module.exports = {
     name: "callad",
     info: "Gửi tin nhắn cho admin",
-    dev: "HNT", //ERROR ONREPLY
+    dev: "HNT",
     onPrefix: true,
     dmUser: false,
     nickName: ["callad"],
@@ -46,6 +46,10 @@ module.exports = {
             );
         }
 
+        if (!global.client.onReply) {
+            global.client.onReply = [];
+        }
+
         global.client.onReply.push({
             name: this.name,
             messageID: event.messageID,
@@ -55,15 +59,18 @@ module.exports = {
     },
 
     onReply: async function ({ api, event, messageID, author, threadID }) {
-        const { senderID, message } = event;
+        const { senderID, body } = event;
 
         const adminList = adminConfig.adminUIDs;
         if (!adminList.includes(senderID)) {
-            return api.sendMessage("⚠️ Bạn không phải là quản trị viên, không thể trả lời báo cáo này.", threadID, messageID);
+            return api.sendMessage(
+                "⚠️ Bạn không phải là quản trị viên, không thể trả lời báo cáo này.",
+                threadID,
+                messageID
+            );
         }
 
-        const replyMessage = `👨‍💼 Quản trị viên đã trả lời:\n\n${message}`;
-
+        const replyMessage = `👨‍💼 Quản trị viên đã trả lời:\n\n${body}`;
         api.sendMessage(replyMessage, author, messageID);
     }
 };

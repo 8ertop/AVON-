@@ -36,7 +36,7 @@ module.exports = {
 
             const filePath = path.join(__dirname, 'cache', `${event.threadID}_${event.senderID}.mp3`);
 
-            const apiKey = "n69TU9q2eXnSiQqkmtcKai9cDIWiaj2o";
+            const apiKey = "HIA6TUpfVmEurLqb78CKVJgKsOxb78En";
             let response;
             try {
                 response = await axios.post(
