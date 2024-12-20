@@ -48,10 +48,18 @@
     "lastMessage": 1728303279118
   },
   "6589198804475799": {
-    "lastMessage": 1731818154706
+    "lastMessage": 1731818154706,
+    "antiout": {
+      "status": true,
+      "storage": []
+    }
   },
   "7992223000861214": {
-    "lastMessage": 1731821181503
+    "lastMessage": 1731821181503,
+    "antiout": {
+      "status": true,
+      "storage": []
+    }
   },
   "61561753304881": {
     "lastMessage": 1731849057817
@@ -102,7 +110,11 @@
     "lastMessage": 1732689575603
   },
   "8853515771407870": {
-    "lastMessage": 1733481086826
+    "lastMessage": 1733481086826,
+    "antiout": {
+      "status": true,
+      "storage": []
+    }
   },
   "7324156777596942": {
     "lastMessage": 1733483214100
