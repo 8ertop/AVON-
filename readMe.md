@@ -82,6 +82,84 @@ noPrefix: async function ({ api, event }) {
 }
 ```
 
+## **Cấu trúc `Currencies`**
+
+Đối tượng `Currencies` được sử dụng để quản lý số dư và giao dịch của người dùng. Thường được dùng trong các lệnh như `daily`, `balance`, hoặc các hệ thống giao dịch khác trong bot.
+
+### **Thuộc tính chính**
+
+```javascript
+global.currencies = {
+    userID: {
+        balance: 0, // Số Gems hiện tại của người dùng
+        lastTransaction: 0, // Thời điểm giao dịch gần nhất (Unix timestamp)
+        transactions: [] // Danh sách lịch sử giao dịch
+    },
+    saveData: function() {
+        // Lưu trạng thái hiện tại của currencies vào tệp JSON
+    },
+    loadData: function() {
+        // Tải dữ liệu currencies từ tệp JSON
+    }
+};
+```
+
+### **Các phương thức hỗ trợ**
+
+#### **Thêm số dư**
+```javascript
+function addBalance(userID, amount) {
+    if (!global.currencies[userID]) {
+        global.currencies[userID] = { balance: 0, lastTransaction: 0, transactions: [] };
+    }
+    global.currencies[userID].balance += amount;
+    global.currencies[userID].lastTransaction = Date.now();
+    global.currencies[userID].transactions.push({ type: "add", amount, timestamp: Date.now() });
+    global.currencies.saveData();
+}
+```
+
+#### **Trừ số dư**
+```javascript
+function subtractBalance(userID, amount) {
+    if (!global.currencies[userID] || global.currencies[userID].balance < amount) {
+        throw new Error("Số dư không đủ!");
+    }
+    global.currencies[userID].balance -= amount;
+    global.currencies[userID].lastTransaction = Date.now();
+    global.currencies[userID].transactions.push({ type: "subtract", amount, timestamp: Date.now() });
+    global.currencies.saveData();
+}
+```
+
+#### **Lấy số dư**
+```javascript
+function getBalance(userID) {
+    return global.currencies[userID]?.balance || 0;
+}
+```
+
+#### **Xem lịch sử giao dịch**
+```javascript
+function getTransactions(userID) {
+    return global.currencies[userID]?.transactions || [];
+}
+```
+
+### **Sử dụng trong lệnh**
+#### **Ví dụ lệnh `balance`**
+```javascript
+module.exports = {
+    name: "balance",
+    info: "Kiểm tra số dư Gems",
+    onLaunch: async function({ api, event }) {
+        const { threadID, senderID } = event;
+        const balance = getBalance(senderID);
+        return api.sendMessage(`» Số dư hiện tại của bạn: ${balance.toLocaleString('vi-VN')} Gems.`, threadID);
+    }
+};
+```
+
 ## Cách sử dụng
 
 ### Ví dụ thực tế
