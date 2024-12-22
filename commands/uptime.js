@@ -2,6 +2,7 @@ const os = require('os');
 const { exec } = require('child_process');
 const util = require('util');
 const fs = require('fs');
+const disk = require('diskusage');
 const execPromise = util.promisify(exec);
 
 const threadsDB = JSON.parse(fs.readFileSync("./database/threads.json", "utf8") || "{}");
@@ -16,28 +17,25 @@ module.exports = {
     dev: "HNT",
     onPrefix: false,
     dmUser: false,
-    nickName: ["uptime", "thongtinhệthống"],
+    nickName: ["uptime", "upt"],
     usages: "uptime",
     cooldowns: 10,
 
-    onLaunch: async function ({ api, event, actions }) {
+    onLaunch: async function ({ event, actions }) {
         const { threadID, messageID } = event;
 
         const userCount = Object.keys(usersDB).length;
         const threadCount = Object.keys(threadsDB).length;
 
         const replyMessage = await actions.reply("Đang tải dữ liệu.......");
-        await sleep(3000);  
-        
+        await sleep(3000);
+
         let currentTime = Date.now();
         let uptime = currentTime - botStartTime;
         let seconds = Math.floor((uptime / 1000) % 60);
         let minutes = Math.floor((uptime / (1000 * 60)) % 60);
         let hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
         let days = Math.floor(uptime / (1000 * 60 * 60 * 24));
-
-        let memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
-        let cpuLoad = os.loadavg()[0].toFixed(2); 
 
         const ping = await getPing();
         const systemInfo = await getSystemInfo();
@@ -49,10 +47,6 @@ module.exports = {
         uptimeMessage += `🕒 Thời gian online: ${days} ngày, ${hours} giờ, ${minutes} phút, ${seconds} giây\n`;
         uptimeMessage += `🖥️ Thời gian hệ điều hành đã hoạt động: ${systemUptime}\n`;
         uptimeMessage += `=======================\n`;
-        uptimeMessage += `📊 Số lệnh đã thực thi: ${commandCount}\n`;
-        uptimeMessage += `💾 Bộ nhớ sử dụng: ${memoryUsage.toFixed(2)} MB\n`;
-        uptimeMessage += `⚙️ CPU Load: ${cpuLoad}%\n`;
-        uptimeMessage += `=======================\n`;
         uptimeMessage += `👤 Người dùng: ${userCount}\n`;
         uptimeMessage += `👥 Nhóm: ${threadCount}\n`;
         uptimeMessage += `=======================\n`;
@@ -63,11 +57,17 @@ module.exports = {
         uptimeMessage += `- Tổng bộ nhớ: ${systemInfo.totalMemory} GB\n`;
         uptimeMessage += `- Bộ nhớ còn lại: ${systemInfo.freeMemory} GB\n`;
         uptimeMessage += `- Bộ nhớ đã sử dụng: ${systemInfo.usedMemory} GB\n`;
+        uptimeMessage += `- Mức sử dụng CPU: ${systemInfo.cpuUsage}%\n`;
+        uptimeMessage += `=======================\n`;
+        uptimeMessage += `🗄️ Ổ đĩa:\n`;
+        uptimeMessage += `- Tổng dung lượng: ${systemInfo.totalDisk} GB\n`;
+        uptimeMessage += `- Dung lượng trống: ${systemInfo.freeDisk} GB\n`;
+        uptimeMessage += `- Dung lượng đã sử dụng: ${systemInfo.usedDisk} GB\n`;
         uptimeMessage += `=======================\n`;
         uptimeMessage += `🌐 Ping: ${ping}\n`;
-        uptimeMessage += `=======================\n`;
+        uptimeMessage += `📊 Lệnh đã sử dụng: ${commandCount}\n`;
         uptimeMessage += `🔢 Node.js Version: ${nodeVersion}\n`;
-        
+
         await actions.edit(uptimeMessage, replyMessage.messageID);
     }
 };
@@ -88,49 +88,65 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function getSystemInfo() {
-    try {
-        const platform = os.platform();
-        const release = os.release();
-        const arch = os.arch();
-        const hostname = os.hostname();
-        const cpuModel = os.cpus()[0].model;
-        const coreCount = os.cpus().length;
-        const cpuSpeed = os.cpus()[0].speed;
-        const loadAverage = os.loadavg();
-        const totalMemory = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2); 
-        const freeMemory = (os.freemem() / (1024 * 1024 * 1024)).toFixed(2); 
-        const usedMemory = (totalMemory - freeMemory).toFixed(2);
-        const uptime = os.uptime();
+async function getCPUUsage() {
+    return new Promise((resolve) => {
+        const startMeasure = getCPUTimes();
+        setTimeout(() => {
+            const endMeasure = getCPUTimes();
+            const idleDifference = endMeasure.idle - startMeasure.idle;
+            const totalDifference = endMeasure.total - startMeasure.total;
+            const cpuUsage = (1 - idleDifference / totalDifference) * 100;
+            resolve(cpuUsage.toFixed(2));
+        }, 1000);
+    });
+}
 
-        return {
-            platform,
-            release,
-            arch,
-            hostname,
-            cpuModel,
-            coreCount,
-            cpuSpeed,
-            totalMemory,
-            freeMemory,
-            usedMemory,
-            uptime,
-        };
-    } catch (error) {
-        return {
-            platform: 'N/A',
-            release: 'N/A',
-            arch: 'N/A',
-            hostname: 'N/A',
-            cpuModel: 'N/A',
-            coreCount: 'N/A',
-            cpuSpeed: 'N/A',
-            totalMemory: 'N/A',
-            freeMemory: 'N/A',
-            usedMemory: 'N/A',
-            uptime: 'N/A',
-        };
+function getCPUTimes() {
+    const cpus = os.cpus();
+    let idle = 0, total = 0;
+
+    for (const cpu of cpus) {
+        for (const type in cpu.times) {
+            total += cpu.times[type];
+        }
+        idle += cpu.times.idle;
     }
+
+    return { idle, total };
+}
+
+async function getDiskInfo() {
+    try {
+        const { available, total } = await disk.check('/');
+        return {
+            totalDisk: (total / (1024 ** 3)).toFixed(2),
+            freeDisk: (available / (1024 ** 3)).toFixed(2),
+            usedDisk: ((total - available) / (1024 ** 3)).toFixed(2)
+        };
+    } catch {
+        return { totalDisk: 'N/A', freeDisk: 'N/A', usedDisk: 'N/A' };
+    }
+}
+
+async function getSystemInfo() {
+    const platform = os.platform();
+    const release = os.release();
+    const arch = os.arch();
+    const hostname = os.hostname();
+    const cpuModel = os.cpus()[0].model;
+    const coreCount = os.cpus().length;
+    const cpuSpeed = os.cpus()[0].speed;
+    const totalMemory = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2);
+    const freeMemory = (os.freemem() / (1024 * 1024 * 1024)).toFixed(2);
+    const usedMemory = (totalMemory - freeMemory).toFixed(2);
+    const cpuUsage = await getCPUUsage();
+    const diskInfo = await getDiskInfo();
+
+    return {
+        platform, release, arch, hostname, cpuModel, coreCount, cpuSpeed,
+        totalMemory, freeMemory, usedMemory, cpuUsage,
+        ...diskInfo 
+    };
 }
 
 async function getNodeVersion() {

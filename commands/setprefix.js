@@ -3,7 +3,7 @@ const fs = require('fs');
 module.exports = {
     name: "setprefix",
     usedby: 4,
-    info: "Thay đổi tiền tố lệnh của bot",
+    info: "Thay đổi Prefix của bot",
     dev: "HNT",
     usages: "setprefix <tiền tố mới>",
     onPrefix: true,

@@ -110,21 +110,55 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
                 }
             }
 
-            if (isPrefixed && commandName === '') {
-                const notFoundMessage = `Không tìm thấy lệnh. Vui lòng nhập ${adminConfig.prefix}help xem tất cả các lệnh.`;
-                return api.sendMessage(notFoundMessage, threadID);
-            }
+const allCommands = Object.keys(commands).concat(Object.values(commands).flatMap(cmd => cmd.aliases || []));
+if (isPrefixed) {
+    if (commandName === '') {
+        const notFoundMessage = `Không tìm thấy lệnh. Vui lòng nhập ${adminConfig.prefix}help để xem tất cả các lệnh.`;
+        return api.sendMessage(notFoundMessage, threadID);
+    }
 
-            const allCommands = Object.keys(commands).concat(Object.values(commands).flatMap(cmd => cmd.aliases || []));
-            if (isPrefixed && commandName !== '' && !allCommands.includes(commandName)) {
-                const notFoundMessage = `Lệnh "${commandName}" không tìm thấy. Vui lòng nhập ${adminConfig.prefix}help để xem tất cả các lệnh có sẵn.`;
-                return api.sendMessage(notFoundMessage, threadID, (err, info) => {
-                    if (!err) {
-                        setTimeout(() => api.unsendMessage(info.messageID), 20000);
+    if (!allCommands.includes(commandName)) {
+        const findSimilarCommands = (cmdName) => {
+            const calculateLevenshteinDistance = (a, b) => {
+                const tmp = [];
+                for (let i = 0; i <= a.length; i++) {
+                    tmp[i] = [i];
+                }
+                for (let j = 0; j <= b.length; j++) {
+                    tmp[0][j] = j;
+                }
+                for (let i = 1; i <= a.length; i++) {
+                    for (let j = 1; j <= b.length; j++) {
+                        tmp[i][j] = Math.min(
+                            tmp[i - 1][j] + 1,
+                            tmp[i][j - 1] + 1,
+                            tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+                        );
                     }
-                });
+                }
+                return tmp[a.length][b.length];
+            };
+
+            return allCommands
+                .map(cmd => ({ cmd, distance: calculateLevenshteinDistance(cmdName, cmd) }))
+                .filter(({ distance }) => distance <= 3)
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, 3)
+                .map(({ cmd }) => cmd)
+                .join(', ') || 'Không có lệnh tương tự.';
+        };
+
+        const similarCommands = findSimilarCommands(commandName);
+        const suggestionMessage = similarCommands ? `Bạn có thể đã nhập sai lệnh, thử: ${similarCommands}` : '';
+
+        return api.sendMessage(suggestionMessage, threadID, (err, info) => {
+            if (!err) {
+                setTimeout(() => api.unsendMessage(info.messageID), 20000);
             }
-//don't steal the code okay because i add secret gban
+        });
+    }
+}
+            
             const command = commands[commandName] || Object.values(commands).find(cmd => cmd.nickName && cmd.nickName.includes(commandName));
 
             if (command) {
