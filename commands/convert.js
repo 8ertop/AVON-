@@ -1,6 +1,6 @@
 module.exports = {
     name: "convert",
-    info: "Chuyển đổi các đơn vị như chiều dài, khối lượng, nhiệt độ, diện tích, thời gian, thể tích, năng lượng, áp suất, lực, và công suất.",
+    info: "Chuyển đổi đơn vị",
     dev: "HNT",
     onPrefix: true,
     dmUser: true,

@@ -65,24 +65,63 @@ module.exports = {
         return api.sendMessage("Bot không phát hiện khuôn mặt nào trong ảnh. Vui lòng gửi ảnh khác.", threadID, messageID);
       }
 
-      const averageAge = detections.map(d => d.age).reduce((a, b) => a + b, 0) / detections.length;
-      const roundedAge = Math.round(averageAge);
-      const gender = detections[0].gender;
-      const beautyPrefix = gender === 'male' ? "Anh chàng này" : "Cô gái này"; 
-      
-      const genderMessage = gender === 'male' ? "nam" : "nữ"; 
-      
+      let maleCount = 0;
+      let femaleCount = 0;
+      let totalAge = 0;
+      let responses = [];
+
+      detections.forEach(detection => {
+        const age = Math.round(detection.age);
+        totalAge += age;
+        const gender = detection.gender;
+        
+        if (gender === 'male') {
+          maleCount++;
+        } else {
+          femaleCount++;
+        }
+
+        let personXungHo = '';
+        if (age <= 12) {
+          personXungHo = gender === 'male' ? 'cậu bé' : 'em gái';
+        } else if (age <= 18) {
+          personXungHo = gender === 'male' ? 'bạn trẻ trai' : 'bạn trẻ gái';
+        } else if (age <= 30) {
+          personXungHo = gender === 'male' ? 'anh chàng này' : 'cô gái này';
+        } else if (age <= 50) {
+          personXungHo = gender === 'male' ? 'quý ông này' : 'quý bà này';
+        } else {
+          personXungHo = gender === 'male' ? 'người đàn ông này' : 'người phụ nữ này';
+        }
+
+        responses.push(`${personXungHo} khoảng ${age} tuổi.`);
+      });
+
+      const averageAge = Math.round(totalAge / detections.length);
+      let xungHo = '';
+
+      if (averageAge <= 12) {
+        xungHo = 'em gái/ cậu bé';
+      } else if (averageAge <= 18) {
+        xungHo = 'trái nhỏ/ bạn trẻ';
+      } else if (averageAge <= 30) {
+        xungHo = maleCount > femaleCount ? 'anh chàng này' : 'cô gái này';
+      } else if (averageAge <= 50) {
+        xungHo = maleCount > femaleCount ? 'quý ông này' : 'quý bà này';
+      } else {
+        xungHo = maleCount > femaleCount ? 'người đàn ông này' : 'người phụ nữ này';
+      }
+
       const beautyRating = Math.random(); 
-      
       let beautyMessage = '';
       if (beautyRating > 0.8) {
-        beautyMessage = `${beautyPrefix} rất phong độ! 😍`;
+        beautyMessage = `Rất phong độ! 😍`;
       } else if (beautyRating > 0.6) {
-        beautyMessage = `${beautyPrefix} khá thu hút! 😁`;
+        beautyMessage = `Khá thu hút! 😁`;
       } else if (beautyRating > 0.4) {
-        beautyMessage = `${beautyPrefix} dễ thương! 😊`;
+        beautyMessage = `Dễ thương! 😊`;
       } else {
-        beautyMessage = `${beautyPrefix} vẫn rất dễ mến! 😜`;
+        beautyMessage = `Vẫn rất dễ mến! 😜`;
       }
 
       const emotions = detections[0].expressions;
@@ -107,7 +146,7 @@ module.exports = {
       }
 
       api.sendMessage(
-        `Bot đã phát hiện ${detections.length} khuôn mặt trong ảnh. Hmm... người này trông khoảng ${roundedAge} tuổi, và có vẻ là ${genderMessage}. 🤔\n${beautyMessage}\n${emotionMessage}`,
+        `Bot đã phát hiện ${detections.length} khuôn mặt trong ảnh. Hmm...${responses.join('\n')}\n${beautyMessage}\n${emotionMessage}`,
         threadID,
         () => {
           setTimeout(() => {

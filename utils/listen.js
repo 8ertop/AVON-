@@ -238,8 +238,26 @@ if (isPrefixed) {
 
 //callReact
 
-        const _0xb4166e=_0x1194;function _0x1194(_0x54c3af,_0x26fb8d){const _0x3c1e5b=_0x3c1e();return _0x1194=function(_0x119471,_0x3e48e2){_0x119471=_0x119471-0x1ca;let _0x3de70d=_0x3c1e5b[_0x119471];return _0x3de70d;},_0x1194(_0x54c3af,_0x26fb8d);}function _0x3c1e(){const _0x38b079=['40UibrRH','3fCwOxn','messageID','5459360oYBTLJ','function','reaction','4131050iIHCJi','callReact','client','Error\x20executing\x20callReact\x20for\x20command\x20','110685wDZyzu','type','passion','name','1030066idmiPQ','28eBnnvq','1315600IzRDSP','36LOPhxy','1628898rkkqyT','error','1144881szNwtI'];_0x3c1e=function(){return _0x38b079;};return _0x3c1e();}(function(_0x1c3ac8,_0x41d081){const _0xb4ff8=_0x1194,_0x5251c9=_0x1c3ac8();while(!![]){try{const _0x58b200=parseInt(_0xb4ff8(0x1d8))/0x1+-parseInt(_0xb4ff8(0x1d6))/0x2*(parseInt(_0xb4ff8(0x1de))/0x3)+-parseInt(_0xb4ff8(0x1d9))/0x4*(-parseInt(_0xb4ff8(0x1d2))/0x5)+parseInt(_0xb4ff8(0x1da))/0x6*(-parseInt(_0xb4ff8(0x1d7))/0x7)+parseInt(_0xb4ff8(0x1dd))/0x8*(parseInt(_0xb4ff8(0x1dc))/0x9)+parseInt(_0xb4ff8(0x1cb))/0xa+-parseInt(_0xb4ff8(0x1ce))/0xb;if(_0x58b200===_0x41d081)break;else _0x5251c9['push'](_0x5251c9['shift']());}catch(_0x316ba6){_0x5251c9['push'](_0x5251c9['shift']());}}}(_0x3c1e,0xafdab));if(event[_0xb4166e(0x1d3)]==='message_reaction'){const reactedMessage=global[_0xb4166e(0x1d0)][_0xb4166e(0x1cf)]['find'](_0x251cfb=>_0x251cfb[_0xb4166e(0x1ca)]===event[_0xb4166e(0x1ca)]);if(reactedMessage){const command=commands[reactedMessage[_0xb4166e(0x1d5)]];if(command&&typeof command[_0xb4166e(0x1cf)]===_0xb4166e(0x1cc))try{await command[_0xb4166e(0x1cf)]({'reaction':event[_0xb4166e(0x1cd)],'api':api,'event':event,'actions':actions});}catch(_0x527c9e){console[_0xb4166e(0x1db)](gradient[_0xb4166e(0x1d4)](_0xb4166e(0x1d1)+reactedMessage[_0xb4166e(0x1d5)]+':\x20'+_0x527c9e));}}
-                  }
+if (event.type === 'message_reaction') {
+    const reactedMessage = global.messages.find(msg => msg.messageID === event.messageID);
+    
+    if (reactedMessage) {
+        const command = commands[reactedMessage.command];
+
+        if (command && typeof command.reaction === 'function') {
+            try {
+                await command.reaction({
+                    'reaction': event.reaction,
+                    'api': api,
+                    'event': event,
+                    'actions': actions
+                });
+            } catch (error) {
+                console.error('Error executing callReact for command ' + reactedMessage.command + ': ' + error);
+            }
+        }
+    }
+}
         //onEvents
                    for (const eventName in eventCommands) {
                   const eventCommand = eventCommands[eventName];
