@@ -41,8 +41,8 @@ module.exports = {
 
         const senderNewBalance = getBalance(senderID);
 
-        const message = `✅ Chuyển thành công ${transferAmount} Gems\n(Thuế: ${tax} Gems).\n` +
-        `💰 Đã trừ: ${totalAmount} Gems.\nSố dư: ${senderNewBalance} Gems.`;
+        const message = `✅ Chuyển thành công ${transferAmount} Xu\n(Thuế: ${tax} Xu).\n` +
+        `💰 Đã trừ: ${totalAmount} Xu.\nSố dư: ${senderNewBalance} Xu.`;
 saveData();
 
 

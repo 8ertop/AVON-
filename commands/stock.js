@@ -5,27 +5,7 @@ module.exports = {
     dev: "HNT", 
     info: "Cung cấp thông tin về cổ phiếu.",
     onPrefix: true, 
-    usages: `
-    *Cung cấp thông tin cổ phiếu:*
-
-    1. Tra cứu thông tin cổ phiếu:
-       - Cú pháp \`.stock [ký hiệu cổ phiếu]\`
-       - Thay thế \`[ký hiệu cổ phiếu]\` bằng ký hiệu của cổ phiếu bạn muốn tra cứu. Ví dụ: \`.stock AAPL\` để xem thông tin cổ phiếu của Apple Inc. (AAPL).
-
-    2. Gợi ý ký hiệu cổ phiếu phổ biến:
-       - Apple Inc. AAPL
-       - Microsoft Corporation MSFT
-       - Google (Alphabet Inc.) GOOGL
-       - Amazon.com Inc. AMZN
-       - Tesla Inc. TSLA
-       - Meta Platforms Inc. (Facebook) META
-       - NVIDIA Corporation NVDA
-       - Netflix Inc. NFLX
-       - IBM Corporation IBM
-       - Intel Corporation INTC
-
-    *Chú ý*: Ký hiệu cổ phiếu có thể thay đổi và các công ty có thể được niêm yết với nhiều ký hiệu khác nhau trên các sàn giao dịch khác nhau.
-    `,
+    usages: `[stock]`,
     cooldowns: 5, 
 
     onLaunch: async function ({ event, actions, target }) {
@@ -47,7 +27,7 @@ module.exports = {
             - IBM Corporation IBM
             - Intel Corporation INTC
 
-            *Chú ý*: Ký hiệu cổ phiếu có thể thay đổi và các công ty có thể được niêm yết với nhiều ký hiệu khác nhau trên các sàn giao dịch khác nhau.
+            Chú ý: Ký hiệu cổ phiếu có thể thay đổi và các công ty có thể được niêm yết với nhiều ký hiệu khác nhau trên các sàn giao dịch khác nhau.
             `;
             return actions.reply(suggestions);
         }

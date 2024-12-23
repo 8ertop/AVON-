@@ -42,7 +42,7 @@ module.exports = {
             const balance = entry[1];
             const userName = userData[userID] ? userData[userID].name : "NaN";
 
-            topMessage += `\n${index + 1}. ${userName}: ${balance} Gems\n`;
+            topMessage += `\n${index + 1}. ${userName}: ${balance} Xu\n`;
 
             if (userID === senderID) {
                 userPosition = index + 1;

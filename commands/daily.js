@@ -25,9 +25,9 @@ function formatNumber(number) {
 module.exports = {
     name: "daily",
     dev: "HNT", 
-    info: "Nhận Gems mỗi ngày",
+    info: "Nhận Xu mỗi ngày",
     onPrefix: true,
-    usages: ".daily: Nhận Gems hàng ngày.",
+    usages: ".daily: Nhận Xu hàng ngày.",
     cooldowns: 0,
 
     onLaunch: async function({ api, event }) {
@@ -39,7 +39,7 @@ module.exports = {
         const dayInMillis = 24 * 60 * 60 * 1000;
 
         if ((now - lastClaimed) < dayInMillis) {
-            return api.sendMessage("Bạn đã nhận Gems hôm nay rồi. Hãy quay lại vào ngày mai!", threadID, messageID);
+            return api.sendMessage("Bạn đã nhận Xu hôm nay rồi. Hãy quay lại vào ngày mai!", threadID, messageID);
         }
 
         const amount = randomInt(10, 51) * 1000;
@@ -52,7 +52,7 @@ module.exports = {
         const currentBalance = global.balance[senderID] || 0;
 
         return api.sendMessage(
-            `» Bạn đã nhận ${formatNumber(amount)} Gems! Số dư hiện tại của bạn là: ${formatNumber(currentBalance)} Gems.`,
+            `» Bạn đã nhận ${formatNumber(amount)} Xu! Số dư hiện tại của bạn là: ${formatNumber(currentBalance)} Xu.`,
             threadID,
             messageID
         );

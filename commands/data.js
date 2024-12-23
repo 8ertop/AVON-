@@ -33,7 +33,7 @@ module.exports = {
         saveData(); 
 
         return api.sendMessage(
-            `✅ Đã thay đổi số dư của ID: ${userID}.\nSố dư cũ: ${formatNumber(currentBalance)} Gems.\nSố dư mới: ${formatNumber(amount)} Gems.`,
+            `✅ Đã thay đổi số dư của ID: ${userID}.\nSố dư cũ: ${formatNumber(currentBalance)} Xu.\nSố dư mới: ${formatNumber(amount)} Xu.`,
             threadID,
             messageID
         );

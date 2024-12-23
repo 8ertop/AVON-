@@ -12,6 +12,6 @@ module.exports = {
 
         const balance = global.balance[userID] || 0;
 
-        return api.sendMessage(`» Số dư tài khoản của bạn là: ${balance} Gems`, threadID, messageID);
+        return api.sendMessage(`» Số dư tài khoản của bạn là: ${balance} Xu`, threadID, messageID);
     }
 };
