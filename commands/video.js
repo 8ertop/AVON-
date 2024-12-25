@@ -2,11 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const yts = require('yt-search');
 const ytdl = require('@distube/ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
+const { execSync } = require('child_process');
 
 module.exports = {
     name: "video",
     version: "1.0.0",
-    info: "Tải video có âm thanh",
+    info: "Tải video từ Youtube",
     onPrefix: true,
     dev: "HNT",
     cooldowns: 10,
@@ -21,68 +23,75 @@ module.exports = {
             const findingMessage = await api.sendMessage(`🔍 | Đang tìm "${videoQuery}". Vui lòng chờ...`, event.threadID);
 
             const searchResults = await yts(videoQuery);
-            const firstResult = searchResults.videos[0];
+            const video = searchResults.videos[0];
 
-            if (!firstResult) {
-                await api.editMessage(`❌ | Không tìm thấy kết quả cho "${videoQuery}".`, findingMessage.messageID, event.threadID);
-                return;
+            if (!video) {
+                return api.editMessage(`❌ | Không tìm thấy video: "${videoQuery}"`, findingMessage.messageID, event.threadID);
             }
 
-            const { title, url } = firstResult;
+            await api.editMessage(`⏳ | Đang tải xuống: "${video.title}"...`, findingMessage.messageID, event.threadID);
 
-            await api.editMessage(`⏱️ | Đã tìm thấy video: "${title}". Đang tải xuống...`, findingMessage.messageID, event.threadID);
+            const videoPath = path.resolve(__dirname, 'cache', `video_${Date.now()}.mp4`);
+            const audioPath = path.resolve(__dirname, 'cache', `audio_${Date.now()}.mp3`);
+            const outputPath = path.resolve(__dirname, 'cache', `final_${Date.now()}.mp4`);
 
-            const filePath = path.resolve(__dirname, 'cache', `${Date.now()}-${title}.mp4`);
+            try {
+                await Promise.all([
+                    new Promise((resolve, reject) => {
+                        ytdl(video.url, {
+                            quality: 'highestvideo',
+                            filter: 'videoonly'
+                        })
+                        .pipe(fs.createWriteStream(videoPath))
+                        .on('finish', resolve)
+                        .on('error', reject);
+                    }),
+                    new Promise((resolve, reject) => {
+                        ytdl(video.url, {
+                            quality: 'highestaudio',
+                            filter: 'audioonly'
+                        })
+                        .pipe(fs.createWriteStream(audioPath))
+                        .on('finish', resolve)
+                        .on('error', reject);
+                    })
+                ]);
 
-            const videoInfo = await ytdl.getInfo(url);
-            const formats = videoInfo.formats;
+                await new Promise((resolve, reject) => {
+                    ffmpeg()
+                        .input(videoPath)
+                        .input(audioPath)
+                        .outputOptions(['-c:v copy', '-c:a aac'])
+                        .save(outputPath)
+                        .on('end', resolve)
+                        .on('error', reject);
+                });
 
-            const videoFormat = ytdl.chooseFormat(formats, { quality: 'highestvideo' });
-            const audioFormat = ytdl.chooseFormat(formats, { quality: 'highestaudio' });
-
-            if (!videoFormat || !audioFormat) {
-                await api.editMessage(`❌ | Không thể tìm thấy video hoặc âm thanh với chất lượng cao nhất.`, findingMessage.messageID, event.threadID);
-                return;
-            }
-
-            const responseStream = ytdl(url, {
-                filter: 'audioandvideo', 
-                format: videoFormat,
-                highWaterMark: 1 << 25
-            });
-
-            const fileStream = fs.createWriteStream(filePath);
-
-            responseStream.pipe(fileStream);
-
-            fileStream.on('finish', async () => {
-                const stats = fs.statSync(filePath);
+                const stats = fs.statSync(outputPath);
                 const fileSizeInMB = stats.size / (1024 * 1024);
 
                 if (fileSizeInMB > 25) {
-                    await api.editMessage(`❌ | Kích thước tệp vượt quá giới hạn 25MB. Không thể gửi video "${title}".`, findingMessage.messageID, event.threadID);
-                    fs.unlinkSync(filePath);
-                    return;
+                    await api.editMessage(`❌ | Video quá lớn (${fileSizeInMB.toFixed(2)}MB). Giới hạn là 25MB.`, findingMessage.messageID, event.threadID);
+                } else {
+                    await api.sendMessage({
+                        body: `🎥 Video: ${video.title}\n⏱️ Thời lượng: ${video.duration.timestamp}\n👍 Lượt thích: ${video.likes}\n👁️ Lượt xem: ${video.views}`,
+                        attachment: fs.createReadStream(outputPath)
+                    }, event.threadID, () => {
+                        api.unsendMessage(findingMessage.messageID);
+                    });
                 }
-
-                const bold = global.fonts.bold("Trình phát video");
-                await api.sendMessage({
-                    body: `📹 ${bold}\n${global.line}\nĐây là video bạn tìm kiếm "${videoQuery}"\n\nTiêu đề: ${title}\nLiên kết Youtube: ${url}`,
-                    attachment: fs.createReadStream(filePath)
-                }, event.threadID);
-
-                fs.unlinkSync(filePath);  
-                api.unsendMessage(findingMessage.messageID);
-            });
-
-            responseStream.on('error', async (error) => {
-                console.error(error);
-                await api.editMessage(`❌ | Lỗi: ${error.message}`, findingMessage.messageID, event.threadID);
-                fs.unlinkSync(filePath);
-            });
+            } catch (error) {
+                console.error('Lỗi tải video:', error);
+                await api.editMessage(`❌ | Lỗi khi xử lý video: ${error.message}`, findingMessage.messageID, event.threadID);
+            } finally {
+            
+                [videoPath, audioPath, outputPath].forEach(file => {
+                    if (fs.existsSync(file)) fs.unlinkSync(file);
+                });
+            }
         } catch (error) {
-            console.error(error);
-            await api.editMessage(`❌ | Lỗi: ${error.message}`, findingMessage.messageID, event.threadID);
+            console.error('Lỗi chung:', error);
+            await api.sendMessage(`❌ | Lỗi: ${error.message}`, event.threadID);
         }
     }
 };

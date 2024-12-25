@@ -289,12 +289,30 @@ const decodeQRCode = async (imagePath) => {
 const processImage = async (attachment) => {
   try {
     const fileUrl = attachment.url;
-    const tempFilePath = path.join(__dirname, 'cache', `temp_image_${Date.now()}.jpg`);
+    const cacheDir = path.join(__dirname, 'cache');
     
-    const fileData = fs.readFileSync(tempFilePath);
-    const base64Image = Buffer.from(fileData).toString('base64');
+    // Ensure cache directory exists
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
     
-    fs.unlinkSync(tempFilePath);
+    const tempFilePath = path.join(cacheDir, `temp_image_${Date.now()}.jpg`);
+    
+    // Download the image
+    const response = await axios({
+      url: fileUrl,
+      responseType: 'arraybuffer'
+    });
+    
+    // Save the image
+    await fs.writeFile(tempFilePath, Buffer.from(response.data));
+    
+    // Read and convert to base64
+    const fileData = await fs.readFile(tempFilePath);
+    const base64Image = fileData.toString('base64');
+    
+    // Clean up temp file
+    await fs.unlink(tempFilePath);
     
     return {
       type: 'image',

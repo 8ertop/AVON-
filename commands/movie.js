@@ -13,80 +13,116 @@ module.exports = {
   onLaunch: async function ({ actions, target }) {
     const apiKey = "db4f9cfb";
     const youtubeApiKey = "AIzaSyBkeljYcuoBOHfx523FH2AEENlciKnm3jM";
-    const title = target.join(" ");
-
-    if (!title) {
-      return actions.reply("Vui lòng cung cấp tên phim.");
+    
+    if (!apiKey || !youtubeApiKey) {
+      return actions.reply("Thiếu API key. Vui lòng kiểm tra cấu hình.");
     }
 
-    const apiUrl = `http://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`;
+    const title = target.join(" ");
+    if (!title) {
+      return actions.reply("📝 Vui lòng nhập tên phim cần tìm.\nVí dụ: .movie Avengers Endgame");
+    }
 
     try {
-      const response = await axios.get(apiUrl);
-      const movieData = response.data;
+      const movieData = await getMovieInfo(title, apiKey);
+      if (!movieData) return actions.reply("❌ Không tìm thấy thông tin phim.");
 
-      if (movieData.Response === "False") {
-        return actions.reply("Không tìm thấy bộ phim hoặc đã xảy ra lỗi.");
-      }
+      const [translatedPlot, trailerUrl] = await Promise.all([
+        translateToVietnamese(movieData.Plot),
+        getMovieTrailer(movieData.Title, youtubeApiKey)
+      ]);
 
-      const movieTitle = movieData.Title;
-      const year = movieData.Year;
-      const cast = movieData.Actors;
-      const ratings = movieData.Ratings.map(rating => `${rating.Source}: ${rating.Value}`).join("\n");
-      const posterUrl = movieData.Poster;
+      const posterPath = await downloadImage(movieData.Poster, "movie_poster.jpg");
+      
+      const movieInfo = formatMovieInfo(movieData, translatedPlot, trailerUrl);
 
-      let path = __dirname + "/cache/movie_poster.jpg";
-      let hasError = false;
-
-      try {
-        let imageResponse = await axios.get(posterUrl, { responseType: "arraybuffer" });
-        fs.writeFileSync(path, Buffer.from(imageResponse.data, "binary"));
-      } catch (error) {
-        console.log(error);
-        hasError = true;
-      }
-
-      const trailerUrl = await getMovieTrailer(movieTitle, youtubeApiKey);
-      const translatedPlot = await translateToVietnamese(movieData.Plot);
-
-      const movieInfo = `
-🎬 Thông tin về bộ phim "${movieTitle}" (${year}):
-
-🎭 Diễn viên: ${cast}
-📖 Nội dung: ${translatedPlot}
-📊 Đánh giá:\n${ratings}
-🎥 Trailer: ${trailerUrl}
-🖼️ Đường dẫn ảnh bìa: ${posterUrl}
-`;
-
-      if (!hasError) {
-        actions.reply({
+      if (posterPath) {
+        await actions.reply({
           body: movieInfo,
-          attachment: fs.createReadStream(path)
-        }, async () => {
-          fs.unlinkSync(path);
-          try {
-            const trailerVideoBuffer = await getTrailerVideo(trailerUrl);
-            actions.reply({
-              body: "Trailer Video:",
-              attachment: fs.createReadStream(trailerVideoBuffer.path)
-            }, () => {
-              fs.unlinkSync(trailerVideoBuffer.path);
-            });
-          } catch (error) {
-            console.error(error);
-            actions.reply("Không thể tải video trailer.");
-          }
+          attachment: fs.createReadStream(posterPath)
         });
+        fs.unlinkSync(posterPath);
+
+        if (trailerUrl && trailerUrl !== "Không tìm thấy video trailer.") {
+          try {
+            const trailerPath = await downloadTrailer(trailerUrl);
+            if (trailerPath) {
+              await actions.reply({
+                body: "🎬 Trailer phim:",
+                attachment: fs.createReadStream(trailerPath)
+              });
+              fs.unlinkSync(trailerPath);
+            }
+          } catch (error) {
+            console.error("Trailer error:", error);
+            actions.reply("⚠️ Không thể tải video trailer.");
+          }
+        }
       } else {
         actions.reply(movieInfo);
       }
     } catch (error) {
-      console.error(error);
-      actions.reply("Đã xảy ra lỗi khi lấy thông tin về phim.");
+      console.error("Movie command error:", error);
+      actions.reply("❌ Đã xảy ra lỗi khi tìm thông tin phim.");
     }
   }
 };
+
+async function getMovieInfo(title, apiKey) {
+  try {
+    const response = await axios.get(`http://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`);
+    return response.data.Response === "True" ? response.data : null;
+  } catch (error) {
+    console.error("OMDB API error:", error);
+    return null;
+  }
+}
+
+function formatMovieInfo(movieData, translatedPlot, trailerUrl) {
+  return `
+🎬 ${movieData.Title} (${movieData.Year})
+──────────────────
+📅 Phát hành: ${movieData.Released}
+⏰ Thời lượng: ${movieData.Runtime}
+🎭 Đạo diễn: ${movieData.Director}
+👥 Diễn viên: ${movieData.Actors}
+🌟 Thể loại: ${movieData.Genre}
+🌍 Quốc gia: ${movieData.Country}
+
+📖 Tóm tắt:
+${translatedPlot}
+
+📊 Đánh giá:
+${movieData.Ratings.map(rating => `• ${rating.Source}: ${rating.Value}`).join("\n")}
+
+🎥 Xem trailer: ${trailerUrl}
+`.trim();
+}
+
+async function downloadImage(url, filename) {
+  if (!url || url === "N/A") return null;
+  const path = __dirname + "/cache/" + filename;
+  try {
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    fs.writeFileSync(path, Buffer.from(response.data, "binary"));
+    return path;
+  } catch (error) {
+    console.error("Image download error:", error);
+    return null;
+  }
+}
+
+async function downloadTrailer(url) {
+  const path = __dirname + "/cache/trailer_video.mp4";
+  try {
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    fs.writeFileSync(path, Buffer.from(response.data, "binary"));
+    return path;
+  } catch (error) {
+    console.error("Trailer download error:", error);
+    return null;
+  }
+}
 
 async function getMovieTrailer(movieTitle, apiKey) {
   const searchUrl = `https://www.googleapis.com/youtube/v3/search?q=${encodeURIComponent(
@@ -112,11 +148,4 @@ async function translateToVietnamese(text) {
     console.error("Lỗi khi dịch sang tiếng Việt:", error);
     return text; 
   }
-}
-
-async function getTrailerVideo(trailerUrl) {
-  const path = __dirname + "/cache/trailer_video.mp4";
-  const response = await axios.get(trailerUrl, { responseType: "arraybuffer" });
-  fs.writeFileSync(path, Buffer.from(response.data, "binary"));
-  return { path };
 }

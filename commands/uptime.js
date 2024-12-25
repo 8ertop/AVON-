@@ -8,7 +8,6 @@ const execPromise = util.promisify(exec);
 const threadsDB = JSON.parse(fs.readFileSync("./database/threads.json", "utf8") || "{}");
 const usersDB = JSON.parse(fs.readFileSync("./database/users.json", "utf8") || "{}");
 
-let commandCount = 0;
 const botStartTime = Date.now();
 
 module.exports = {
@@ -65,7 +64,6 @@ module.exports = {
         uptimeMessage += `- Dung lượng đã sử dụng: ${systemInfo.usedDisk} GB\n`;
         uptimeMessage += `=======================\n`;
         uptimeMessage += `🌐 Ping: ${ping}\n`;
-        uptimeMessage += `📊 Lệnh đã sử dụng: ${commandCount}\n`;
         uptimeMessage += `🔢 Node.js Version: ${nodeVersion}\n`;
 
         await actions.edit(uptimeMessage, replyMessage.messageID);

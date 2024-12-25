@@ -7,9 +7,13 @@ const path = require('path');
 const convertHMS = (value) => new Date(value * 1000).toISOString().slice(11, 19);
 const ITAG = 140;
 
-const downloadMusicFromYoutube = async (link, filePath, itag = ITAG) => {
+const downloadMusicFromYoutube = async (link, filePath, itag = 140) => {
     try {
         const data = await ytdl.getInfo(link);
+        const format = ytdl.chooseFormat(data.formats, { quality: 'highestaudio', filter: 'audioonly' });
+        
+        if (!format) throw new Error('Không tìm thấy định dạng âm thanh phù hợp');
+
         const result = {
             title: data.videoDetails.title,
             dur: Number(data.videoDetails.lengthSeconds),
@@ -17,18 +21,26 @@ const downloadMusicFromYoutube = async (link, filePath, itag = ITAG) => {
         };
 
         return new Promise((resolve, reject) => {
-            ytdl(link, { filter: format => format.itag === itag })
-                .pipe(fs.createWriteStream(filePath))
-                .on('finish', () => {
-                    resolve({
-                        data: filePath,
-                        info: result,
-                    });
-                })
-                .on('error', reject);
+            ytdl(link, { 
+                format: format,
+                filter: 'audioonly',
+                quality: 'highestaudio',
+                highWaterMark: 1<<25
+            })
+            .on('error', (err) => {
+                reject(err);
+            })
+            .pipe(fs.createWriteStream(filePath))
+            .on('finish', () => {
+                resolve({
+                    data: filePath,
+                    info: result,
+                });
+            })
+            .on('error', reject);
         });
     } catch (error) {
-        console.error('Lỗi khi tải nhạc:', error);
+        console.error('Lỗi tải nhạc:', error);
         throw error;
     }
 };
@@ -50,69 +62,76 @@ module.exports = {
             return api.sendMessage("❯ Vui lòng nhập từ khóa tìm kiếm hoặc liên kết YouTube!", threadID, messageID);
         }
 
-        const keywordSearch = target.join(" "); 
+        const keywordSearch = target.join(" ");
         const filePath = path.resolve(__dirname, 'cache', `sing-${senderID}.mp3`);
 
-        if (target[0]?.startsWith("https://")) {
-            const findingMessage = await api.sendMessage(`🔍 | Đang tìm kiếm video từ link YouTube...`, threadID, messageID);
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
 
-            try {
-                const { data, info } = await downloadMusicFromYoutube(target[0], filePath);
-                const body = `🎵 Tiêu đề: ${info.title}\n⏱️ Thời lượng: ${convertHMS(info.dur)}\n⏱️ Thời gian xử lý: ${Math.floor((Date.now() - info.timestart) / 1000)} giây`;
-
-                if (fs.statSync(data).size > 26214400) {
-                    return api.sendMessage("⚠️ Không thể gửi tệp vì kích thước lớn hơn 25MB.", threadID, messageID);
-                }
-
-                await api.editMessage(`⏱️ | Đã tìm thấy bài hát: "${info.title}". Đang tải xuống...`, findingMessage.messageID, threadID);
+            if (target[0]?.startsWith("https://")) {
+                const findingMessage = await api.sendMessage(`🔍 | Đang xử lý yêu cầu...`, threadID, messageID);
                 
-                return api.sendMessage({ body, attachment: fs.createReadStream(data) }, threadID, () => fs.unlinkSync(data), messageID);
-            } catch (e) {
-                console.error("Lỗi khi tải nhạc từ link:", e);
-                return api.sendMessage("⚠️ Đã xảy ra lỗi khi tải nhạc từ link.", threadID, messageID);
-            }
-        } else {
-            const findingMessage = await api.sendMessage(`🔍 | Đang tìm kiếm bài hát "${keywordSearch}". Vui lòng chờ...`, threadID, messageID);
-
-            try {
-                const results = await Youtube.GetListByKeyword(keywordSearch, false, 6);
-                const data = results?.items || [];
-                const links = data.map(item => item?.id);
-                const thumbnails = [];
-
-                for (let i = 0; i < data.length; i++) {
-                    const thumbnailUrl = `https://i.ytimg.com/vi/${data[i]?.id}/hqdefault.jpg`;
-                    const thumbnailPath = path.resolve(__dirname, 'cache', `thumbnail-${senderID}-${i + 1}.jpg`);
-                    const response = await axios.get(thumbnailUrl, { responseType: 'arraybuffer' });
-                    fs.writeFileSync(thumbnailPath, Buffer.from(response.data, 'binary'));
-                    thumbnails.push(fs.createReadStream(thumbnailPath));
-                }
-
-                const randomIndex = Math.floor(Math.random() * data.length);
-                const selectedLink = links[randomIndex];
-                const selectedTitle = data[randomIndex].title;
-                const selectedDuration = data[randomIndex].length.simpleText;
-
-                const body = `🎵 Tiêu đề: ${selectedTitle}\n⏱️ Thời lượng: ${selectedDuration}`;
-
-                await api.editMessage(`⏱️ | Đã tìm thấy bài hát: "${selectedTitle}". Đang tải xuống...`, findingMessage.messageID, threadID);
-
                 try {
-                    const { data: downloadData, info } = await downloadMusicFromYoutube(`https://www.youtube.com/watch?v=${selectedLink}`, filePath);
-                    if (fs.statSync(downloadData).size > 26214400) {
-                        return api.sendMessage("⚠️ Không thể gửi tệp vì kích thước lớn hơn 25MB.", threadID, messageID);
-                    }
+                    const { data, info } = await downloadMusicFromYoutube(target[0], filePath);
+                    if (!fs.existsSync(data)) throw new Error('Tải nhạc thất bại');
 
-                    return api.sendMessage({ body, attachment: fs.createReadStream(downloadData) }, threadID, () => fs.unlinkSync(downloadData), messageID);
+                    const stats = fs.statSync(data);
+                    if (stats.size < 1024) throw new Error('File nhạc không hợp lệ');
+
+                    const body = `🎵 Tiêu đề: ${info.title}\n⏱️ Thời lượng: ${convertHMS(info.dur)}\n⏱️ Thời gian xử lý: ${Math.floor((Date.now() - info.timestart) / 1000)} giây`;
+
+                    await api.editMessage(`⌛ | Đang gửi bài hát...`, findingMessage.messageID, threadID);
+
+                    return api.sendMessage(
+                        { 
+                            body,
+                            attachment: fs.createReadStream(data)
+                        },
+                        threadID,
+                        (err) => {
+                            if (err) console.error(err);
+                            fs.unlinkSync(data);
+                        },
+                        messageID
+                    );
                 } catch (e) {
-                    console.error("Lỗi khi tải nhạc từ video:", e);
-                    return api.sendMessage("⚠️ Đã xảy ra lỗi khi tải nhạc từ video.", threadID, messageID);
+                    console.error("Lỗi xử lý:", e);
+                    return api.sendMessage(`⚠️ Lỗi: ${e.message}`, threadID, messageID);
                 }
+            } else {
+                const findingMessage = await api.sendMessage(`🔍 | Đang tìm "${keywordSearch}"...`, threadID, messageID);
 
-            } catch (error) {
-                console.error("Lỗi khi tìm kiếm video:", error);
-                return api.sendMessage("⚠️ Đã xảy ra lỗi khi tìm kiếm video.", threadID, messageID);
+                const results = await Youtube.GetListByKeyword(keywordSearch, false, 3);
+                if (!results?.items?.length) throw new Error('Không tìm thấy bài hát');
+
+                const video = results.items[0];
+                const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
+
+                await api.editMessage(`⏳ | Đang tải: "${video.title}"...`, findingMessage.messageID, threadID);
+
+                const { data, info } = await downloadMusicFromYoutube(videoUrl, filePath);
+                if (!fs.existsSync(data)) throw new Error('Tải nhạc thất bại');
+
+                const body = `🎵 Tiêu đề: ${info.title}\n⏱️ Thời lượng: ${convertHMS(info.dur)}`;
+
+                return api.sendMessage(
+                    { 
+                        body,
+                        attachment: fs.createReadStream(data)
+                    },
+                    threadID,
+                    (err) => {
+                        if (err) console.error(err);
+                        fs.unlinkSync(data);
+                    },
+                    messageID
+                );
             }
+        } catch (error) {
+            console.error("Lỗi:", error);
+            return api.sendMessage(`❌ Lỗi: ${error.message}`, threadID, messageID);
         }
     }
 };

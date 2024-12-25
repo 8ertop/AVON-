@@ -32,13 +32,16 @@ module.exports = {
     }
 
     try {
-      const waitMessage = await api.sendMessage("Đợi xíu để bot kiểm tra ảnh... 🤔", threadID);
+      const waitMessage = await api.sendMessage("⏳ Đang phân tích khuôn mặt...", threadID);
 
-      await faceapi.nets.ssdMobilenetv1.loadFromDisk('./commands/cache/models');
-      await faceapi.nets.faceLandmark68Net.loadFromDisk('./commands/cache/models');
-      await faceapi.nets.faceRecognitionNet.loadFromDisk('./commands/cache/models');
-      await faceapi.nets.ageGenderNet.loadFromDisk('./commands/cache/models');
-      await faceapi.nets.faceExpressionNet.loadFromDisk('./commands/cache/models'); // Mô hình cảm xúc
+      await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromDisk('./commands/cache/models'),
+        faceapi.nets.faceLandmark68Net.loadFromDisk('./commands/cache/models'),
+        faceapi.nets.faceRecognitionNet.loadFromDisk('./commands/cache/models'),
+        faceapi.nets.ageGenderNet.loadFromDisk('./commands/cache/models'),
+        faceapi.nets.faceExpressionNet.loadFromDisk('./commands/cache/models'),
+        faceapi.nets.tinyFaceDetector.loadFromDisk('./commands/cache/models')
+      ]);
 
       const imageUrl = attachment.url;
       const imageFileName = `image_${Date.now()}.jpg`;
@@ -58,107 +61,96 @@ module.exports = {
       const imgBuffer = fs.readFileSync(imagePath);
       const image = await loadImage(imgBuffer);
 
-      const detections = await faceapi.detectAllFaces(image).withAgeAndGender().withFaceExpressions(); // Thêm cảm xúc
+      const detections = await faceapi
+        .detectAllFaces(image)
+        .withFaceLandmarks()
+        .withFaceExpressions()
+        .withAgeAndGender();
 
       if (detections.length === 0) {
         fs.unlinkSync(imagePath);
         return api.sendMessage("Bot không phát hiện khuôn mặt nào trong ảnh. Vui lòng gửi ảnh khác.", threadID, messageID);
       }
 
-      let maleCount = 0;
-      let femaleCount = 0;
-      let totalAge = 0;
-      let responses = [];
+      const canvas = faceapi.createCanvasFromMedia(image);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0);
 
       detections.forEach(detection => {
-        const age = Math.round(detection.age);
-        totalAge += age;
-        const gender = detection.gender;
+        const box = detection.detection.box;
+        const drawBox = new faceapi.draw.DrawBox(box, {
+          label: `${Math.round(detection.age)}T (${detection.gender})`,
+          boxColor: detection.gender === 'male' ? '#00ff00' : '#ff00ff'
+        });
+        drawBox.draw(canvas);
+
+        const expressions = detection.expressions;
+        const mainExpression = Object.entries(expressions)
+          .reduce((a, b) => a[1] > b[1] ? a : b)[0];
         
-        if (gender === 'male') {
-          maleCount++;
-        } else {
-          femaleCount++;
-        }
-
-        let personXungHo = '';
-        if (age <= 12) {
-          personXungHo = gender === 'male' ? 'cậu bé' : 'em gái';
-        } else if (age <= 18) {
-          personXungHo = gender === 'male' ? 'bạn trẻ trai' : 'bạn trẻ gái';
-        } else if (age <= 30) {
-          personXungHo = gender === 'male' ? 'anh chàng này' : 'cô gái này';
-        } else if (age <= 50) {
-          personXungHo = gender === 'male' ? 'quý ông này' : 'quý bà này';
-        } else {
-          personXungHo = gender === 'male' ? 'người đàn ông này' : 'người phụ nữ này';
-        }
-
-        responses.push(`${personXungHo} khoảng ${age} tuổi.`);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(`${mainExpression} (${Math.round(expressions[mainExpression] * 100)}%)`, 
+          box.x, box.y - 5);
       });
 
-      const averageAge = Math.round(totalAge / detections.length);
-      let xungHo = '';
+      const outputPath = path.join(cacheDir, `analyzed_${Date.now()}.jpg`);
+      const stream = canvas.createJPEGStream();
+      await new Promise((resolve, reject) => {
+        stream.pipe(fs.createWriteStream(outputPath))
+          .on('finish', resolve)
+          .on('error', reject);
+      });
 
-      if (averageAge <= 12) {
-        xungHo = 'em gái/ cậu bé';
-      } else if (averageAge <= 18) {
-        xungHo = 'trái nhỏ/ bạn trẻ';
-      } else if (averageAge <= 30) {
-        xungHo = maleCount > femaleCount ? 'anh chàng này' : 'cô gái này';
-      } else if (averageAge <= 50) {
-        xungHo = maleCount > femaleCount ? 'quý ông này' : 'quý bà này';
-      } else {
-        xungHo = maleCount > femaleCount ? 'người đàn ông này' : 'người phụ nữ này';
-      }
+      let analysis = `📊 Kết quả phân tích:\n\n`;
+      detections.forEach((detection, index) => {
+        const age = Math.round(detection.age);
+        const gender = detection.gender === 'male' ? 'Nam' : 'Nữ';
+        const mainEmotion = Object.entries(detection.expressions)
+          .reduce((a, b) => a[1] > b[1] ? a : b)[0];
 
-      const beautyRating = Math.random(); 
-      let beautyMessage = '';
-      if (beautyRating > 0.8) {
-        beautyMessage = `Rất phong độ! 😍`;
-      } else if (beautyRating > 0.6) {
-        beautyMessage = `Khá thu hút! 😁`;
-      } else if (beautyRating > 0.4) {
-        beautyMessage = `Dễ thương! 😊`;
-      } else {
-        beautyMessage = `Vẫn rất dễ mến! 😜`;
-      }
+        analysis += `👤 Người ${index + 1}:\n`;
+        analysis += `├─ Tuổi: ${age}\n`;
+        analysis += `├─ Giới tính: ${gender}\n`;
+        analysis += `├─ Cảm xúc: ${translateEmotion(mainEmotion)}\n`;
+        analysis += `└─ Đánh giá: ${getBeautyRating(age, gender)}\n\n`;
+      });
 
-      const emotions = detections[0].expressions;
-      const maxEmotion = Object.keys(emotions).reduce((max, emotion) => emotions[emotion] > emotions[max] ? emotion : max, 'neutral');
+      await api.sendMessage({
+        body: analysis,
+        attachment: fs.createReadStream(outputPath)
+      }, threadID, () => {
+        fs.unlinkSync(outputPath);
+        api.unsendMessage(waitMessage.messageID);
+      }, messageID);
 
-      let emotionMessage = '';
-      switch(maxEmotion) {
-        case 'happy':
-          emotionMessage = "Người này có vẻ rất vui vẻ! 😊";
-          break;
-        case 'sad':
-          emotionMessage = "Người này trông hơi buồn... 😔";
-          break;
-        case 'angry':
-          emotionMessage = "Người này có vẻ hơi tức giận... 😡";
-          break;
-        case 'surprised':
-          emotionMessage = "Người này đang ngạc nhiên! 😲";
-          break;
-        default:
-          emotionMessage = "Trông người này khá điềm tĩnh và trung lập. 😌";
-      }
-
-      api.sendMessage(
-        `Bot đã phát hiện ${detections.length} khuôn mặt trong ảnh. Hmm...${responses.join('\n')}\n${beautyMessage}\n${emotionMessage}`,
-        threadID,
-        () => {
-          setTimeout(() => {
-            api.unsendMessage(waitMessage.messageID);
-          }, 3000);
-          fs.unlinkSync(imagePath);
-        },
-        messageID
-      );      
     } catch (error) {
       console.error("Lỗi khi phân tích khuôn mặt:", error);
       api.sendMessage("Đã xảy ra lỗi khi phân tích ảnh. Vui lòng thử lại sau.", threadID, messageID);
     }
   }
 };
+
+function translateEmotion(emotion) {
+  const emotions = {
+    'happy': 'Vui vẻ 😊',
+    'sad': 'Buồn bã 😢',
+    'angry': 'Tức giận 😠',
+    'fearful': 'Lo sợ 😨',
+    'disgusted': 'Ghê tởm 🤢',
+    'surprised': 'Ngạc nhiên 😲',
+    'neutral': 'Bình thường 😐'
+  };
+  return emotions[emotion] || emotion;
+}
+
+function getBeautyRating(age, gender) {
+  const ratings = [
+    "Rất cuốn hút ✨",
+    "Xinh đẹp/Đẹp trai 🌟",
+    "Dễ thương 💝",
+    "Có duyên 🌸",
+    "Bình thường 🌼"
+  ];
+  return ratings[Math.floor(Math.random() * ratings.length)];
+}
