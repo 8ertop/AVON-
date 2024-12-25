@@ -56,27 +56,27 @@ module.exports = {
     generateChart: async function (chartData, timeRange, cryptoSymbol) {
 
         const title = `${cryptoSymbol.toUpperCase()} - ${timeRange} Ngày`
-        const width = 1200; 
-        const height = 800; 
+        const width = 1500; 
+        const height = 900;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
         const bgGradient = ctx.createLinearGradient(0, 0, width, height);
-        bgGradient.addColorStop(0, '#000428');
-        bgGradient.addColorStop(0.5, '#004e92');
-        bgGradient.addColorStop(1, '#000428');
+        bgGradient.addColorStop(0, '#1a237e');
+        bgGradient.addColorStop(0.5, '#000051');
+        bgGradient.addColorStop(1, '#000028');
         ctx.fillStyle = bgGradient;
         ctx.fillRect(0, 0, width, height);
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < width; i += 40) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+        ctx.lineWidth = 0.8;
+        for (let i = 0; i < width; i += 50) {
             ctx.beginPath();
             ctx.moveTo(i, 0);
             ctx.lineTo(i, height);
             ctx.stroke();
         }
-        for (let i = 0; i < height; i += 40) {
+        for (let i = 0; i < height; i += 50) {
             ctx.beginPath();
             ctx.moveTo(0, i);
             ctx.lineTo(width, i);
@@ -88,9 +88,9 @@ module.exports = {
         const priceChange = ((priceEnd - priceStart) / priceStart) * 100;
 
         const primaryColor = priceChange >= 0 ? 
-            'rgba(0, 255, 127, 1)' : 'rgba(255, 69, 0, 1)';
+            'rgba(0, 255, 127, 0.9)' : 'rgba(255, 69, 0, 0.9)';
         const secondaryColor = priceChange >= 0 ? 
-            'rgba(0, 255, 127, 0.1)' : 'rgba(255, 69, 0, 0.1)';
+            'rgba(0, 255, 127, 0.05)' : 'rgba(255, 69, 0, 0.05)';
 
         const gradientLine = ctx.createLinearGradient(0, 0, 0, height);
         gradientLine.addColorStop(0, primaryColor);
@@ -123,40 +123,40 @@ module.exports = {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Giá BTC',
+                        label: `Giá ${cryptoSymbol}`,
                         data: data,
                         borderColor: primaryColor,
-                        borderWidth: 3,
+                        borderWidth: 2.5,
                         fill: true,
                         backgroundColor: gradientLine,
                         pointRadius: 0,
-                        pointHoverRadius: 8,
-                        pointBackgroundColor: '#fff',
+                        pointHoverRadius: 10,
+                        pointBackgroundColor: '#ffffff',
                         pointHoverBackgroundColor: primaryColor,
                         pointBorderColor: primaryColor,
-                        pointHoverBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        tension: 0.4,
+                        pointHoverBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        tension: 0.35,
                         order: 1
                     },
                     {
                         label: 'MA20',
                         data: ma20,
-                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderColor: 'rgba(255, 215, 0, 0.8)',
                         borderWidth: 2,
                         fill: false,
                         pointRadius: 0,
-                        tension: 0.4,
+                        tension: 0.35,
                         order: 2
                     },
                     {
                         label: 'MA50',
                         data: ma50,
-                        borderColor: 'rgba(147, 112, 219, 1)',
+                        borderColor: 'rgba(147, 112, 219, 0.8)',
                         borderWidth: 2,
                         fill: false,
                         pointRadius: 0,
-                        tension: 0.4,
+                        tension: 0.35,
                         order: 3
                     }
                 ]
@@ -167,10 +167,10 @@ module.exports = {
                 animation: { duration: 0 },
                 layout: {
                     padding: {
-                        top: 40,
-                        right: 40,
-                        bottom: 30,
-                        left: 40
+                        top: 50,
+                        right: 50,
+                        bottom: 40,
+                        left: 50
                     }
                 },
                 plugins: {
@@ -180,11 +180,11 @@ module.exports = {
                         labels: {
                             color: '#ffffff',
                             font: {
-                                size: 14,
-                                family: "'Roboto', sans-serif",
-                                weight: '500'
+                                size: 16,
+                                family: "'Arial', sans-serif",
+                                weight: '600'
                             },
-                            padding: 20,
+                            padding: 25,
                             usePointStyle: true,
                             pointStyle: 'circle'
                         }
@@ -192,27 +192,34 @@ module.exports = {
                     title: {
                         display: true,
                         text: [
-                            `${title}`,
-                            `Thay đổi: ${priceChange.toFixed(2)}%`
+                            `${cryptoSymbol.toUpperCase()} - ${timeRange} Ngày`,
+                            `Thay đổi: ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%`
                         ],
                         color: '#ffffff',
                         font: {
-                            size: 20,
-                            family: "'Roboto', sans-serif",
-                            weight: '600'
+                            size: 24,
+                            family: "'Arial', sans-serif",
+                            weight: '700'
                         },
                         padding: {
-                            top: 20,
-                            bottom: 30
+                            top: 25,
+                            bottom: 35
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
                         borderColor: primaryColor,
                         borderWidth: 1,
-                        padding: 15,
+                        padding: 18,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 14
+                        },
                         displayColors: true,
                         callbacks: {
                             label: function(context) {
@@ -233,35 +240,37 @@ module.exports = {
                 scales: {
                     x: {
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)',
+                            color: 'rgba(255, 255, 255, 0.08)',
                             drawBorder: false,
-                            tickLength: 8
+                            tickLength: 10
                         },
                         ticks: {
                             color: '#ffffff',
                             font: {
-                                size: 11,
-                                family: "'Roboto', sans-serif"
+                                size: 13,
+                                family: "'Arial', sans-serif",
+                                weight: '500'
                             },
                             maxRotation: 45,
                             minRotation: 45,
-                            padding: 8
+                            padding: 10
                         }
                     },
                     y: {
                         position: 'right',
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)',
+                            color: 'rgba(255, 255, 255, 0.08)',
                             drawBorder: false,
                             drawTicks: false
                         },
                         ticks: {
                             color: '#ffffff',
                             font: {
-                                size: 12,
-                                family: "'Roboto', sans-serif"
+                                size: 14,
+                                family: "'Arial', sans-serif",
+                                weight: '500'
                             },
-                            padding: 8,
+                            padding: 10,
                             callback: function(value) {
                                 return '$' + value.toLocaleString();
                             }
@@ -279,12 +288,13 @@ module.exports = {
             }
         });
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.font = '12px Roboto';
+        // Enhanced watermark
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'right';
-        ctx.fillText('Created by ' + this.dev, width - 50, height - 20);
+        ctx.fillText('Created by ' + this.dev, width - 60, height - 25);
 
-        const buffer = canvas.toBuffer('image/png');
+        const buffer = canvas.toBuffer('image/png', { quality: 1, progressive: true });
         const path = './commands/cache/crypto_chart.png';
         await fs.writeFile(path, buffer);
         return path;
@@ -343,4 +353,4 @@ module.exports = {
             await api.sendMessage('Đã xảy ra lỗi khi cập nhật thông tin tiền điện tử.', event.threadID);
         }
     }
-};    
+};
