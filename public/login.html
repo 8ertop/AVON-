@@ -1,73 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Login</title>
-    <style>
-        body {
-            background-color: #f7f7f7;
-        }
-        .login-container {
-            margin-top: 100px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container login-container">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <h2 class="text-center">Login</h2>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-light btn-block" style="background-color: #87CEFA;">Login</button>
-                    <div class="text-center" id="error-message" style="color: red;">
-                        <!-- Display error message -->
-                        <script>
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const error = urlParams.get('error');
-                            if (error) {
-                                document.getElementById('error-message').textContent = error;
-                            }
-                        </script>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --primary-color: #3498db;
+                --secondary-color: #2980b9;
+                --gradient-start: #1e272e;
+                --gradient-end: #485460;
+                --card-bg: rgba(255, 255, 255, 0.1);
+                --input-bg: rgba(255, 255, 255, 0.15);
+            }
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            body {
+                font-family: 'Poppins', sans-serif;
+                background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+                margin: 0;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-            fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    document.getElementById('error-message').textContent = 'Unauthorized access. Please check your credentials.';
+            .login-container {
+                background: var(--card-bg);
+                padding: 3rem;
+                border-radius: 20px;
+                backdrop-filter: blur(15px);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+                width: 100%;
+                max-width: 400px;
+                animation: fadeIn 0.5s ease;
+            }
+
+            .login-header {
+                text-align: center;
+                color: white;
+                margin-bottom: 2.5rem;
+            }
+
+            .login-header h2 {
+                font-weight: 600;
+                font-size: 2rem;
+                margin: 0;
+                background: linear-gradient(45deg, var(--primary-color), #74b9ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .login-form {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .form-group {
+                position: relative;
+            }
+
+            input {
+                width: 100%;
+                padding: 15px;
+                border: 2px solid transparent;
+                border-radius: 12px;
+                background: var(--input-bg);
+                color: white;
+                font-size: 16px;
+                font-family: 'Poppins', sans-serif;
+                box-sizing: border-box;
+                transition: all 0.3s ease;
+            }
+
+            input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            input::placeholder {
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            button {
+                background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+                color: white;
+                padding: 15px;
+                border: none;
+                border-radius: 12px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 600;
+                font-family: 'Poppins', sans-serif;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                width: 100%;
+            }
+
+            button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+            }
+
+            #error-message {
+                color: #ff7675;
+                text-align: center;
+                margin-top: 1rem;
+                padding: 10px;
+                border-radius: 8px;
+                background: rgba(255, 118, 117, 0.1);
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-header">
+                <h2>Login</h2>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <input type="text" id="username" name="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit">Login</button>
+                <div id="error-message"></div>
+            </form>
+        </div>
+
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        document.getElementById('error-message').textContent = 'Unauthorized access. Please check your credentials.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             });
-        });
-    </script>
-</body>
-</html>
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error) {
+                document.getElementById('error-message').textContent = error;
+            }
+        </script>
+    </body>
+    </html>

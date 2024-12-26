@@ -291,23 +291,19 @@ const processImage = async (attachment) => {
     const fileUrl = attachment.url;
     const cacheDir = path.join(__dirname, 'cache');
     
-    // Ensure cache directory exists
     if (!fs.existsSync(cacheDir)) {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
     
     const tempFilePath = path.join(cacheDir, `temp_image_${Date.now()}.jpg`);
     
-    // Download the image
     const response = await axios({
       url: fileUrl,
       responseType: 'arraybuffer'
     });
     
-    // Save the image
     await fs.writeFile(tempFilePath, Buffer.from(response.data));
-    
-    // Read and convert to base64
+  
     const fileData = await fs.readFile(tempFilePath);
     const base64Image = fileData.toString('base64');
     

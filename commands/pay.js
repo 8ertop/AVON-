@@ -3,6 +3,18 @@ const { createCanvas, loadImage } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 
+// Add at the top of the file
+const transactionsPath = path.join(__dirname, '../utils/transactions.json');
+let transactions = {};
+
+try {
+    if (fs.existsSync(transactionsPath)) {
+        transactions = JSON.parse(fs.readFileSync(transactionsPath, 'utf8'));
+    }
+} catch (error) {
+    console.error("Error loading transactions:", error);
+}
+
 async function createBillImage(senderName, recipientName, amount, tax, total, remainingBalance) {
     const canvas = createCanvas(800, 600);
     const ctx = canvas.getContext('2d');
@@ -119,11 +131,38 @@ module.exports = {
         updateBalance(senderID, -totalAmount);
         updateBalance(recipientID, transferAmount);
 
-        const senderNewBalance = getBalance(senderID);
-
         const threadInfo = await api.getThreadInfo(threadID);
         const senderName = threadInfo.userInfo.find(user => user.id === senderID)?.name || "Người dùng";
         const recipientName = threadInfo.userInfo.find(user => user.id === recipientID)?.name || "Người nhận";
+
+        if (!transactions[senderID]) transactions[senderID] = [];
+        if (!transactions[recipientID]) transactions[recipientID] = [];
+
+        transactions[senderID].push({
+            type: 'out',
+            amount: totalAmount,
+            timestamp: Date.now(),
+            description: `Chuyển ${transferAmount} Xu cho ${recipientName}`
+        });
+
+        transactions[recipientID].push({
+            type: 'in',
+            amount: transferAmount,
+            timestamp: Date.now(),
+            description: `Nhận ${transferAmount} Xu từ ${senderName}`
+        });
+
+        if (transactions[senderID].length > 5) {
+            transactions[senderID] = transactions[senderID].slice(-5);
+        }
+        if (transactions[recipientID].length > 5) {
+            transactions[recipientID] = transactions[recipientID].slice(-5);
+        }
+
+        // Save transactions to file
+        fs.writeFileSync(transactionsPath, JSON.stringify(transactions, null, 2));
+
+        const senderNewBalance = getBalance(senderID);
 
         const billPath = await createBillImage(
             senderName,

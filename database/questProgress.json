@@ -23,8 +23,94 @@
   },
   "100068382888605": {
     "progress": {
-      "play_games": 2
+      "play_games": 55,
+      "win_games": 30,
+      "play_bctc": 21,
+      "win_bctc": 8
     },
+    "completed": {
+      "play_games": true
+    },
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": "Thu Dec 26 2024"
+  },
+  "61570532692675": {
+    "progress": {
+      "play_games": 21,
+      "win_games": 13
+    },
+    "completed": {
+      "play_games": true,
+      "win_games": true
+    },
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": "Thu Dec 26 2024"
+  },
+  "61565913026622": {
+    "progress": {
+      "play_games": 2,
+      "play_bctc": 1,
+      "win_games": 1
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "61569008916749": {
+    "progress": {
+      "play_games": 5,
+      "win_games": 4
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "61564482366941": {
+    "progress": {
+      "play_games": 2,
+      "win_games": 1
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "100063719077878": {
+    "progress": {
+      "play_games": 6,
+      "win_games": 4
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "61570270795701": {
+    "progress": {
+      "play_games": 3
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "100081800629553": {
+    "progress": {
+      "play_games": 17,
+      "win_games": 10,
+      "play_bctc": 2
+    },
+    "completed": {
+      "win_games": true
+    },
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": "Thu Dec 26 2024"
+  },
+  "100044841742945": {
+    "progress": {},
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "100080149704587": {
+    "progress": {},
     "completed": {},
     "lastReset": "Thu Dec 26 2024",
     "lastRewardClaim": null

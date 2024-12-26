@@ -14,6 +14,7 @@ module.exports = {
     cooldowns: 0,
 
     lastPlayed: {},
+    winStreak: {}, 
 
     onLaunch: async function({ api, event, target = [] }) {
         const { threadID, messageID, senderID } = event;
@@ -83,13 +84,26 @@ module.exports = {
                 ]
             };
 
-            const weightedCombinations = [
-                combinations["chẵn"][0],
-                combinations["lẻ"][0],
-                combinations["lẻ"][1],
-                ...Array(1).fill(combinations["chẵn"][1]),
-                ...Array(1).fill(combinations["lẻ"][2])
-            ];
+            if (!this.winStreak[senderID]) this.winStreak[senderID] = 0;
+
+            let weightedCombinations = [];
+            if (this.winStreak[senderID] >= 3) {
+                weightedCombinations = [
+                    ...Array(5).fill(combinations["chẵn"][0]),
+                    ...Array(5).fill(combinations["lẻ"][0]),
+                    ...Array(5).fill(combinations["lẻ"][1]),
+                    combinations["chẵn"][1], 
+                    combinations["lẻ"][2]    
+                ];
+            } else {
+                weightedCombinations = [
+                    combinations["chẵn"][0],
+                    combinations["lẻ"][0],
+                    combinations["lẻ"][1],
+                    ...Array(1).fill(combinations["chẵn"][1]),
+                    ...Array(1).fill(combinations["lẻ"][2])
+                ];
+            }
 
             const result = weightedCombinations[randomInt(0, weightedCombinations.length)];
 
@@ -100,6 +114,9 @@ module.exports = {
             let resultStatus = "thua";
 
             if (resultType === choice) {
+              
+                this.winStreak[senderID]++;
+                
                 if (JSON.stringify(result) === JSON.stringify(combinations["chẵn"][1]) && resultType === "chẵn") {
                     multiplier = 6; 
                 } else if (JSON.stringify(result) === JSON.stringify(combinations["lẻ"][2]) && resultType === "lẻ") {
@@ -121,6 +138,7 @@ module.exports = {
                     threadID, messageID
                 );
             } else {
+                this.winStreak[senderID] = 0;
                 updateQuestProgress(senderID, "play_games");
             }
 

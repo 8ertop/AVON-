@@ -1,32 +1,38 @@
 module.exports = {
-    name: "idst", 
-    info: "Lấy ID sticker khi trả lời một tin nhắn chứa sticker", 
-    dev: "HNT", 
-    usedby: 2,  
-    onPrefix: true, 
+    name: "idst",
+    info: "Xem thông tin sticker và lấy ID sticker", 
+    dev: "HNT",
+    usedby: 2,
+    onPrefix: true,
     dmUser: true,
-    usages: "Trả lời sticker để lấy ID, hoặc cung cấp ID sticker để bot gửi sticker đó",
+    usages: "[ID sticker] hoặc reply sticker\n- Reply sticker: Lấy thông tin và ID của sticker\n- ID sticker: Bot sẽ gửi sticker tương ứng",
     cooldowns: 0,
-    onLaunch: async function ({ api, event, args }) {
+    onLaunch: async function ({ api, event, target }) {
         if (event.type == "message_reply") {
             if (event.messageReply.attachments && event.messageReply.attachments[0].type == "sticker") {
-               
+                const sticker = event.messageReply.attachments[0];
+                let msg = `🏷️ ID Sticker: ${sticker.stickerID}\n`;
+                if (sticker.description) msg += `📝 Mô tả: ${sticker.description}\n`;
+                if (sticker.packID) msg += `📦 Pack ID: ${sticker.packID}\n`;
+                
                 return api.sendMessage({
-                    body: `ID: ${event.messageReply.attachments[0].stickerID}\nMô tả: ${event.messageReply.attachments[0].description}`
+                    body: msg
                 }, event.threadID);
             } else {
-                return api.sendMessage("Chỉ trả lời sticker nhé.", event.threadID);
+                return api.sendMessage("❌ Vui lòng reply một sticker để xem thông tin.", event.threadID);
             }
-        } else if (args[0]) {
-            
-            const stickerID = args[0];
-            return api.sendMessage({
-                body: "Đây là sticker bạn yêu cầu:",
-                sticker: stickerID
-            }, event.threadID);
+        } else if (target[0]) {
+            try {
+                const stickerID = target[0];
+                return api.sendMessage({
+                    body: "🎯 Sticker của bạn đây:",
+                    sticker: stickerID
+                }, event.threadID);
+            } catch (err) {
+                return api.sendMessage("❌ ID sticker không hợp lệ hoặc không tồn tại!", event.threadID);
+            }
         } else {
-       
-            return api.sendMessage("Vui lòng trả lời một sticker để lấy ID.", event.threadID);
+            return api.sendMessage("ℹ️ Hướng dẫn sử dụng:\n- Reply một sticker để xem thông tin\n- Gửi ID sticker để bot gửi lại sticker đó", event.threadID);
         }
     }
 };

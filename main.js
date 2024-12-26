@@ -1,4 +1,3 @@
-
 const fs = require("fs");
 const gradient = require("gradient-string");
  const cron = require('node-cron');
@@ -135,7 +134,10 @@ const reloadModules = () => {
     console.log(boldText(gradient.passion("[ BOT MODULES RELOADED ]")));
 };
 const startBot = () => {
-  console.log(boldText(gradient.retro("Logging via AppState...")));
+   
+    require('./dashboard.js');
+    
+    console.log(boldText(gradient.retro("Logging via AppState...")));
 
     login({ appState: JSON.parse(fs.readFileSync(config.APPSTATE_PATH, "utf8")) }, (err, api) => {
         if (err) return console.error(boldText(gradient.passion(`Login error: ${JSON.stringify(err)}`)));
