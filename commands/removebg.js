@@ -6,7 +6,7 @@ const { image } = require('image-downloader');
 
 module.exports = {
   name: 'removebg',
-  info: 'Tách Background ảnh',
+  info: 'Tách nền ảnh chuyên nghiệp',
   dev: 'HNT',
   onPrefix: false,
   dmUser: false,
@@ -15,20 +15,21 @@ module.exports = {
   cooldowns: 5,
 
   onLaunch: async function ({ api, event, actions }) {
-    const successMessage = `📸[ TÁCH BACKGROUND ]📸
-━━━━━━━━━━━━━━━
-[✔️]➜ Tách Background thành công! Nền của ảnh bạn đã được loại bỏ.`;
+    const successMessage = `━━『 TÁCH NỀN ẢNH 』━━
+[🎯] → Tách nền ảnh thành công!
+[💝] → Ảnh đã được xử lý và loại bỏ background
+[⚜️] → Chúc bạn một ngày tốt lành!`;
 
     if (event.type !== "message_reply") {
-      return await actions.reply("[❗]➜ Vui lòng reply một ảnh để thực hiện tách Background.");
+      return await actions.reply("━━『 LỖI 』━━\n[❗] → Vui lòng reply một ảnh để thực hiện tách nền.");
     }
 
     if (!event.messageReply.attachments || event.messageReply.attachments.length === 0) {
-      return await actions.reply("[❗]➜ Bạn cần reply ít nhất một ảnh.");
+      return await actions.reply("━━『 LỖI 』━━\n[❗] → Bạn cần reply một ảnh để sử dụng lệnh.");
     }
 
     if (event.messageReply.attachments[0].type !== "photo") {
-      return await actions.reply("[❗]➜ Đối tượng reply không phải là ảnh.");
+      return await actions.reply("━━『 LỖI 』━━\n[❗] → File bạn reply không phải là ảnh.");
     }
 
     const content = event.messageReply.attachments[0].url;
@@ -49,7 +50,7 @@ module.exports = {
 
     try {
       
-      const waitMessage = await actions.reply("[⏳]➜ Đang tách background ảnh, vui lòng chờ một chút...");
+      const waitMessage = await actions.reply("━━『 ĐANG XỬ LÝ 』━━\n[⏳] → Đang tách nền ảnh...\n[💫] → Vui lòng chờ trong giây lát!");
 
       await image({ url: content, dest: inputPath });
 
@@ -87,7 +88,7 @@ module.exports = {
     } catch (error) {
       console.error('Lỗi:', error);
       
-      await actions.reply(`[❗]➜ Đã xảy ra lỗi: ${error.message}. Vui lòng kiểm tra lại API Key hoặc thử lại sau.`);
+      await actions.reply(`━━『 LỖI XỬ LÝ 』━━\n[❗] → Đã xảy ra lỗi: ${error.message}\n[💠] → Vui lòng thử lại sau hoặc liên hệ admin.`);
 
       if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);

@@ -1,0 +1,32 @@
+{
+  "61561753304881": {
+    "progress": {
+      "play_games": 5,
+      "win_games": 3,
+      "play_bctc": 1
+    },
+    "completed": {
+      "play_games": true,
+      "win_games": true
+    },
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": "Thu Dec 26 2024"
+  },
+  "61559151106106": {
+    "progress": {
+      "play_games": 1,
+      "win_games": 1
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  },
+  "100068382888605": {
+    "progress": {
+      "play_games": 2
+    },
+    "completed": {},
+    "lastReset": "Thu Dec 26 2024",
+    "lastRewardClaim": null
+  }
+}

@@ -2,7 +2,7 @@ const { randomInt } = require("crypto");
 const path = require("path");
 const fs = require("fs");
 const { createCanvas, loadImage } = require("canvas");
-const { getBalance, updateBalance } = require('../utils/currencies');
+const { getBalance, updateBalance, updateQuestProgress } = require('../utils/currencies');
 
 function formatNumber(number) {
     return number.toLocaleString('vi-VN');
@@ -98,10 +98,14 @@ module.exports = {
                 result = "thắng";
                 const winnings = betAmount * multiplier;
                 updateBalance(senderID, winnings);
+                updateQuestProgress(senderID, "win_bctc");
                 resultMessage += `🎉 Chúc mừng! Bạn thắng và nhận được ${formatNumber(winnings)} Xu.\n`;
             } else {
                 resultMessage += `😢 Bạn đã thua và mất ${formatNumber(betAmount)} Xu.\n`;
             }
+
+            // Track that user played a game
+            updateQuestProgress(senderID, "play_bctc");
 
             const newBalance = getBalance(senderID);
             resultMessage += `💰 Số dư hiện tại của bạn: ${formatNumber(newBalance)} Xu.`;

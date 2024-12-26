@@ -1,4 +1,5 @@
 const fs = require('fs');
+const axios = require('axios');
 
 module.exports = {
     name: "module",
@@ -46,8 +47,21 @@ module.exports = {
 
             if (fs.existsSync(filePath)) {
                 const commandCode = fs.readFileSync(filePath, 'utf-8');
-                const shareMessage = await api.sendMessage("Đang trích xuất mã lệnh...", threadID, event.messageID);
-                await api.editMessage(`${commandName}.js\n\n${commandCode}`, shareMessage.messageID, threadID);
+                const shareMessage = await api.sendMessage("Đang tải mã lệnh lên mockup...", threadID, event.messageID);
+                
+                try {
+                    const response = await axios.post('https://designer.mocky.io/api/mockup', {
+                        content: commandCode,
+                        charset: 'UTF-8',
+                        status: 200,
+                        content_type: 'application/javascript'
+                    });
+
+                    const mockupUrl = response.data.link;
+                    await api.editMessage(`✅ Mã lệnh đã được chia sẻ:\n\n${commandName}.js\nURL: ${mockupUrl}\n\nMã lệnh:\n${commandCode}`, shareMessage.messageID, threadID);
+                } catch (error) {
+                    await api.editMessage(`❌ Không thể tải lên mockup. Lỗi: ${error.message}\n\n${commandName}.js\n${commandCode}`, shareMessage.messageID, threadID);
+                }
             } else {
                 await api.sendMessage(`❌ Lệnh ${commandName} không tồn tại.`, threadID);
             }

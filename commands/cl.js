@@ -1,5 +1,5 @@
 const { randomInt } = require("crypto");
-const { getBalance, updateBalance } = require('../utils/currencies');
+const { getBalance, updateBalance, updateQuestProgress } = require('../utils/currencies');
 
 function formatNumber(number) {
     return number.toLocaleString('vi-VN');
@@ -110,6 +110,8 @@ module.exports = {
                 resultStatus = "thắng";
                 const winnings = betAmount * multiplier;
                 updateBalance(senderID, winnings);
+                updateQuestProgress(senderID, "play_games");
+                updateQuestProgress(senderID, "win_games");
 
                 api.unsendMessage(sentMessage.messageID); 
                 return api.sendMessage(
@@ -118,6 +120,8 @@ module.exports = {
                     `💰 Số dư hiện tại của bạn: ${formatNumber(getBalance(senderID))} Xu.`,
                     threadID, messageID
                 );
+            } else {
+                updateQuestProgress(senderID, "play_games");
             }
 
             api.unsendMessage(sentMessage.messageID); 

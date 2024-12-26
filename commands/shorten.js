@@ -2,32 +2,54 @@ const axios = require('axios');
 
 module.exports = {
     name: "shorten",
-    info: "Rút gọn liên kết dài thành liên kết ngắn.",
+    info: "Rút gọn liên kết dài thành liên kết ngắ.",
     dev: "HNT",
     onPrefix: true,
     dmUser: false,
-    nickName: ["shorten"],
-    usages: "shortenurl [URL]",
+    nickName: ["shorten", "rutgon", "url"],
+    usages: "shortenurl [URL] [-alias tencustom]",
     cooldowns: 5,
 
     onLaunch: async function ({ api, event, target, actions }) {
-        const longUrl = target.join(' ').trim();
+        const args = target.join(' ').trim().split(' ');
+        const longUrl = args[0];
+        const customAlias = args.includes('-alias') ? args[args.indexOf('-alias') + 1] : null;
 
         if (!longUrl) {
-            return await actions.reply("❎ Bạn cần cung cấp liên kết để rút gọn. Ví dụ: shortenurl https://www.example.com");
+            return await actions.reply("📝 Hướng dẫn sử dụng:\n- !shorten [URL]\n- !shorten [URL] -alias [tên tùy chỉnh]\n\nVí dụ:\n!shorten https://example.com\n!shorten https://example.com -alias website");
         }
 
         try {
-            const response = await axios.get(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`);
-            const shortUrl = response.data;
+            new URL(longUrl);
+        } catch {
+            return await actions.reply("❌ URL không hợp lệ! Vui lòng kiểm tra và thử lại.");
+        }
 
-            if (shortUrl && shortUrl.startsWith('http')) {
-                await actions.reply(`✅ Liên kết rút gọn của bạn là: ${shortUrl}`);
+        try {
+            let response;
+            if (customAlias) {
+       
+                response = await axios.post('https://api.tinyurl.com/create', {
+                    url: longUrl,
+                    alias: customAlias
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const shortUrl = response.data.data.tiny_url;
+                await actions.reply(`✨ Liên kết đã được rút gọn:\n📎 URL gốc: ${longUrl}\n🔗 URL ngắn: ${shortUrl}\n✏️ Tên tùy chỉnh: ${customAlias}`);
             } else {
-                await actions.reply("❌ Đã xảy ra lỗi khi rút gọn liên kết. Vui lòng thử lại sau.");
+                response = await axios.get(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`);
+                const shortUrl = response.data;
+                await actions.reply(`✨ Liên kết đã được rút gọn:\n📎 URL gốc: ${longUrl}\n🔗 URL ngắn: ${shortUrl}`);
             }
         } catch (error) {
-            await actions.reply("⚠️ Không thể rút gọn liên kết vào lúc này. Vui lòng thử lại sau.");
+            if (error.response?.status === 400) {
+                await actions.reply("⚠️ Tên tùy chỉnh đã được sử dụng hoặc không hợp lệ. Vui lòng thử tên khác.");
+            } else {
+                await actions.reply("❌ Không thể rút gọn liên kết. Vui lòng kiểm tra URL và thử lại sau.");
+            }
         }
     }
 };

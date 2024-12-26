@@ -6,9 +6,9 @@ const https = require('https');
 module.exports = {
     name: "ssl",
     usedby: 0,
-    info: "Chụp màn hình một URL được cung cấp Và kiểm tra SSL.",
+    info: "Chụp màn hình và kiểm tra bảo mật SSL của trang web",
     onPrefix: true,
-    dev: "Jonell Magallanes",
+    dev: "HNT",
     cooldowns: 6,
     dmUser: false,
 
@@ -17,10 +17,10 @@ module.exports = {
         const device = target[1] || 'iphone 16 Pro Max';
 
         if (!url) {
-            return api.sendMessage("Vui lòng cung cấp URL.", event.threadID, event.messageID);
+            return api.sendMessage("⚠️ Vui lòng cung cấp URL.\n📝 Cách dùng: ssl [url] [thiết bị]\n💡 Các thiết bị: iphone, ipad, pixel, galaxy", event.threadID, event.messageID);
         }
 
-        const check = await api.sendMessage("Đang chụp màn hình.....", event.threadID, event.messageID);
+        const check = await api.sendMessage("🔄 Đang xử lý yêu cầu của bạn...\n📸 Chụp màn hình\n🔒 Kiểm tra SSL", event.threadID, event.messageID);
         const filePath = path.join(__dirname, 'cache', `screenshot-${Date.now()}.png`);
 
         try {
@@ -36,20 +36,29 @@ module.exports = {
                 const req = https.get(url, (res) => {
                     const certificate = res.socket.getPeerCertificate();
                     if (Object.keys(certificate).length === 0) {
-                        resolve('Không tìm thấy chứng chỉ SSL.');
+                        resolve({
+                            status: '❌ Không tìm thấy chứng chỉ SSL',
+                            details: null
+                        });
                     } else {
                         const validFrom = new Date(certificate.valid_from);
                         const validTo = new Date(certificate.valid_to);
                         const currentDate = new Date();
-                        if (currentDate >= validFrom && currentDate <= validTo) {
-                            resolve('Chứng chỉ SSL hợp lệ.');
-                        } else {
-                            resolve('Chứng chỉ SSL không hợp lệ.');
-                        }
+                        const isValid = currentDate >= validFrom && currentDate <= validTo;
+                        
+                        resolve({
+                            status: isValid ? '✅ Chứng chỉ SSL hợp lệ' : '❌ Chứng chỉ SSL không hợp lệ',
+                            details: {
+                                issuer: certificate.issuer.CN,
+                                validFrom: validFrom.toLocaleDateString('vi-VN'),
+                                validTo: validTo.toLocaleDateString('vi-VN'),
+                                protocol: res.socket.getProtocol()
+                            }
+                        });
                     }
                 });
 
-                req.on('error', (error) => reject('Lỗi khi kiểm tra chứng chỉ.'));
+                req.on('error', (error) => reject('❌ Lỗi khi kiểm tra chứng chỉ'));
                 req.end();
             });
 
@@ -57,10 +66,15 @@ module.exports = {
 
             api.unsendMessage(check.messageID);
 
-            const certStatus = await certCheck;
+            const certResult = await certCheck;
+            const certDetails = certResult.details ? `
+📜 Nhà cung cấp: ${certResult.details.issuer}
+📅 Ngày bắt đầu: ${certResult.details.validFrom}
+📅 Ngày hết hạn: ${certResult.details.validTo}
+🔐 Giao thức: ${certResult.details.protocol}` : '';
 
             api.sendMessage({
-                body: `Ảnh chụp màn hình của ${url} trên thiết bị ${device}\nMã trạng thái: ${statusCode}\nTrạng thái chứng chỉ: ${certStatus}`,
+                body: `🌐 URL: ${url}\n📱 Thiết bị: ${device}\n📊 Mã trạng thái: ${statusCode}\n🔒 ${certResult.status}${certDetails}`,
                 attachment: fs.createReadStream(filePath)
             }, event.threadID, () => {
                 fs.unlinkSync(filePath);
@@ -68,7 +82,7 @@ module.exports = {
 
         } catch (error) {
             console.error(error);
-            return api.sendMessage(error.message, event.threadID, event.messageID);
+            return api.sendMessage(`❌ Đã xảy ra lỗi: ${error.message}`, event.threadID, event.messageID);
         }
     }
 }

@@ -288,7 +288,6 @@ module.exports = {
             }
         });
 
-        // Enhanced watermark
         ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'right';

@@ -2,7 +2,7 @@ const { exec } = require("child_process");
 
 module.exports = {
     name: "npm",
-    info: "Quản lý thư viện NPM: kiểm tra, cài đặt hoặc gỡ bỏ",
+    info: "Quản lý thư viện NPM",
     dev: "HNT",
     usedBy: 4,
     onPrefix: true,

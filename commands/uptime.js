@@ -41,30 +41,29 @@ module.exports = {
         const nodeVersion = await getNodeVersion();
         const systemUptime = await getSystemUptime();
 
-        let uptimeMessage = `⏱️ BOT UPTIME\n`;
-        uptimeMessage += `=======================\n`;
-        uptimeMessage += `🕒 Thời gian online: ${days} ngày, ${hours} giờ, ${minutes} phút, ${seconds} giây\n`;
-        uptimeMessage += `🖥️ Thời gian hệ điều hành đã hoạt động: ${systemUptime}\n`;
-        uptimeMessage += `=======================\n`;
-        uptimeMessage += `👤 Người dùng: ${userCount}\n`;
-        uptimeMessage += `👥 Nhóm: ${threadCount}\n`;
-        uptimeMessage += `=======================\n`;
-        uptimeMessage += `🖥️ Hệ điều hành: ${systemInfo.platform} (${systemInfo.arch})\n`;
-        uptimeMessage += `- Phiên bản: ${systemInfo.release}\n`;
-        uptimeMessage += `- Tên máy: ${systemInfo.hostname}\n`;
-        uptimeMessage += `- CPU Model: ${systemInfo.cpuModel} (${systemInfo.coreCount} core(s), ${systemInfo.cpuSpeed} MHz)\n`;
-        uptimeMessage += `- Tổng bộ nhớ: ${systemInfo.totalMemory} GB\n`;
-        uptimeMessage += `- Bộ nhớ còn lại: ${systemInfo.freeMemory} GB\n`;
-        uptimeMessage += `- Bộ nhớ đã sử dụng: ${systemInfo.usedMemory} GB\n`;
-        uptimeMessage += `- Mức sử dụng CPU: ${systemInfo.cpuUsage}%\n`;
-        uptimeMessage += `=======================\n`;
-        uptimeMessage += `🗄️ Ổ đĩa:\n`;
-        uptimeMessage += `- Tổng dung lượng: ${systemInfo.totalDisk} GB\n`;
-        uptimeMessage += `- Dung lượng trống: ${systemInfo.freeDisk} GB\n`;
-        uptimeMessage += `- Dung lượng đã sử dụng: ${systemInfo.usedDisk} GB\n`;
-        uptimeMessage += `=======================\n`;
-        uptimeMessage += `🌐 Ping: ${ping}\n`;
-        uptimeMessage += `🔢 Node.js Version: ${nodeVersion}\n`;
+        let uptimeMessage = `⚡ BOT SYSTEM MONITOR ⚡\n`;
+        uptimeMessage += `══════════════════\n`;
+        uptimeMessage += `🤖 Bot Status\n`;
+        uptimeMessage += `▸ Online: ${days}d ${hours}h ${minutes}m ${seconds}s\n`;
+        uptimeMessage += `▸ Users: ${userCount} | Groups: ${threadCount}\n`;
+        uptimeMessage += `▸ Ping: ${ping}\n`;
+        uptimeMessage += `══════════════════\n`;
+        uptimeMessage += `💻 System Info\n`;
+        uptimeMessage += `▸ OS: ${systemInfo.platform} ${systemInfo.arch}\n`;
+        uptimeMessage += `▸ Hostname: ${systemInfo.hostname}\n`;
+        uptimeMessage += `▸ Uptime: ${systemUptime}\n`;
+        uptimeMessage += `▸ Load Average: ${systemInfo.loadAverage}\n`;
+        uptimeMessage += `══════════════════\n`;
+        uptimeMessage += `🔧 Resources\n`;
+        uptimeMessage += `▸ CPU: ${systemInfo.cpuUsage}% | ${systemInfo.cpuModel}\n`;
+        uptimeMessage += `▸ RAM: ${systemInfo.usedMemory}/${systemInfo.totalMemory}GB (${systemInfo.memoryUsagePercent}%)\n`;
+        uptimeMessage += `▸ Disk: ${systemInfo.usedDisk}/${systemInfo.totalDisk}GB\n`;
+        uptimeMessage += `══════════════════\n`;
+        uptimeMessage += `📊 Process Info\n`;
+        uptimeMessage += `▸ Node.js: ${nodeVersion}\n`;
+        uptimeMessage += `▸ Heap: ${systemInfo.processMemory.heapUsed}/${systemInfo.processMemory.heapTotal}MB\n`;
+        uptimeMessage += `▸ RSS: ${systemInfo.processMemory.rss}MB\n`;
+        uptimeMessage += `▸ Network: ${systemInfo.networkInfo}\n`;
 
         await actions.edit(uptimeMessage, replyMessage.messageID);
     }
@@ -137,12 +136,31 @@ async function getSystemInfo() {
     const totalMemory = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2);
     const freeMemory = (os.freemem() / (1024 * 1024 * 1024)).toFixed(2);
     const usedMemory = (totalMemory - freeMemory).toFixed(2);
+    const memoryUsagePercent = ((usedMemory / totalMemory) * 100).toFixed(1);
     const cpuUsage = await getCPUUsage();
     const diskInfo = await getDiskInfo();
+    const loadAvg = os.loadavg();
+    const networkInterfaces = os.networkInterfaces();
+    const processMemoryUsage = process.memoryUsage();
+    
+    // Get network info
+    const networkInfo = Object.entries(networkInterfaces)
+        .filter(([_, interfaces]) => interfaces.some(i => !i.internal))
+        .map(([name, interfaces]) => {
+            const interface = interfaces.find(i => !i.internal);
+            return `${name}: ${interface.address}`;
+        }).join(', ');
 
     return {
         platform, release, arch, hostname, cpuModel, coreCount, cpuSpeed,
-        totalMemory, freeMemory, usedMemory, cpuUsage,
+        totalMemory, freeMemory, usedMemory, cpuUsage, memoryUsagePercent,
+        networkInfo,
+        loadAverage: loadAvg[0].toFixed(2),
+        processMemory: {
+            heapUsed: (processMemoryUsage.heapUsed / 1024 / 1024).toFixed(2),
+            heapTotal: (processMemoryUsage.heapTotal / 1024 / 1024).toFixed(2),
+            rss: (processMemoryUsage.rss / 1024 / 1024).toFixed(2)
+        },
         ...diskInfo 
     };
 }

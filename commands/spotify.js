@@ -28,33 +28,36 @@ async function getAccessToken() {
     return response.data.access_token;
 }
 
-async function searchSpotify(query) {
+async function searchSpotify(query, type = 'track') {
     const accessToken = await getAccessToken();
     
     const response = await axios.get('https://api.spotify.com/v1/search', {
         params: {
             q: query,
-            type: 'track,album',
-            limit: 1
+            type: type,
+            limit: 5
         },
         headers: {
             'Authorization': `Bearer ${accessToken}`
         }
     });
     
-    const track = response.data.tracks.items[0];
-    if (!track) {
-        throw new Error('Không tìm thấy bài hát hoặc album với từ khóa này.');
+    if (type === 'track') {
+        const tracks = response.data.tracks.items;
+        if (!tracks.length) {
+            throw new Error('❌ Không tìm thấy bài hát nào với từ khóa này.');
+        }
+        return tracks.map(track => ({
+            id: track.id,
+            name: track.name,
+            artists: track.artists.map(artist => artist.name).join(', '),
+            album: track.album.name,
+            preview_url: track.preview_url,
+            image_url: track.album.images[0].url,
+            duration: Math.floor(track.duration_ms / 1000),
+            popularity: track.popularity
+        }));
     }
-
-    return {
-        id: track.id,
-        name: track.name,
-        artists: track.artists.map(artist => artist.name).join(', '),
-        album: track.album.name,
-        preview_url: track.preview_url,
-        image_url: track.album.images[0].url
-    };
 }
 
 async function downloadTrackPreview(url, outputPath) {
@@ -82,43 +85,45 @@ module.exports = {
         const query = target && target.length > 0 ? target.join(' ') : null;
         
         if (!query) {
-            return api.sendMessage('💬 Vui lòng cung cấp từ khóa tìm kiếm. Ví dụ: spotify Shape of You', threadID, messageID);
+            return api.sendMessage('💫 Hướng dẫn sử dụng:\n\n'+
+                                 '🎵 spotify [tên bài hát]\n'+
+                                 '🎼 spotify -top [thể loại]\n'+
+                                 '🎸 spotify -artist [tên nghệ sĩ]\n'+
+                                 '💿 spotify -album [tên album]', threadID, messageID);
         }
 
         try {
-            const trackInfo = await searchSpotify(query);
-            const filePath = path.resolve(cacheDir, `${trackInfo.id}.mp3`);
+            const tracks = await searchSpotify(query);
+            const track = tracks[0]; 
+            const filePath = path.resolve(cacheDir, `${track.id}.mp3`);
             
-            if (trackInfo.preview_url) {
-                await downloadTrackPreview(trackInfo.preview_url, filePath);
-                const message = `🎵 **Thông tin bài hát** 🎵\n\n` +
-                                `🎤 Tên bài hát: ${trackInfo.name}\n` +
-                                `🎶 Nghệ sĩ: ${trackInfo.artists}\n` +
-                                `💿 Album: ${trackInfo.album}\n` +
-                                `🔗 Xem thêm: [Link nghe](https://open.spotify.com/track/${trackInfo.id})\n` +
-                                `🎧 nghe trước:`;
+            const duration = `${Math.floor(track.duration / 60)}:${(track.duration % 60).toString().padStart(2, '0')}`;
+            const message = `🎵 𝗧𝗛𝗢̂𝗡𝗚 𝗧𝗜𝗡 𝗕𝗔̀𝗜 𝗛𝗔́𝗧 🎵\n\n` +
+                          `🎤 Tên: ${track.name}\n` +
+                          `👥 Ca sĩ: ${track.artists}\n` +
+                          `💿 Album: ${track.album}\n` +
+                          `⏱️ Thời lượng: ${duration}\n` +
+                          `🌟 Độ hot: ${track.popularity}/100\n` +
+                          `🔗 Link: https://open.spotify.com/track/${track.id}\n\n`;
 
-                api.sendMessage({
+            if (track.preview_url) {
+                await api.sendMessage(message + '💭 Đang tải preview...', threadID, messageID);
+                await downloadTrackPreview(track.preview_url, filePath);
+                await api.sendMessage({
                     body: message,
                     attachment: fs.createReadStream(filePath)
                 }, threadID, async () => {
                     try {
                         fs.unlinkSync(filePath);
-                    } catch (unlinkError) {
-                        console.error(`Không thể xóa tệp ${filePath}: ${unlinkError.message}`);
+                    } catch (error) {
+                        console.error(`Lỗi xóa file: ${error.message}`);
                     }
                 }, messageID);
             } else {
-                const message = `🎵 **Thông tin bài hát** 🎵\n\n` +
-                                `🎤 Tên bài hát: ${trackInfo.name}\n` +
-                                `🎶 Nghệ sĩ: ${trackInfo.artists}\n` +
-                                `💿 Album: ${trackInfo.album}\n` +
-                                `🔗 Xem thêm: [Link nghe](https://open.spotify.com/track/${trackInfo.id})\n` +
-                                `🎧 nghe trước: Không có`;
-                api.sendMessage(message, threadID, messageID);
+                api.sendMessage(message + '❌ Không có bản preview cho bài hát này.', threadID, messageID);
             }
         } catch (error) {
-            api.sendMessage(`🚫 Lỗi: ${error.message}`, threadID, messageID);
+            api.sendMessage(`❌ Lỗi: ${error.message}`, threadID, messageID);
         }
     }
 };

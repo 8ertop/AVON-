@@ -1,37 +1,31 @@
 module.exports = {
     name: "study",
-    info: "Tìm kiếm tài liệu học tập miễn phí, khóa học hoặc tài liệu chuyên môn.",
+    info: "Tìm kiếm tài liệu học tập miễn phí với nhiều danh mục",
     dev: "HNT",
     onPrefix: true,
-    usages: "study <chủ đề>",
+    usages: "study <category> [topic]",
     cooldowns: 10,
 
     onLaunch: async function ({ api, event, target }) {
         const { threadID, messageID } = event;
-
-        const topic = target.join(" ").toLowerCase();
         
-        if (!topic) {
-            return api.sendMessage(
-                "Danh sách các khóa học và hướng dẫn sử dụng lệnh:\n" +
-                "1. `python` - Học lập trình Python\n" +
-                "2. `javascript` - Học lập trình JavaScript\n" +
-                "3. `java` - Học lập trình Java\n" +
-                "4. `machine learning` - Học Machine Learning\n" +
-                "5. `data science` - Học Data Science\n" +
-                "6. `design` - Học thiết kế đồ họa\n" +
-                "7. `english` - Học tiếng Anh\n" +
-                "8. `web development` - Học phát triển web\n" +
-                
-                "Ví dụ: Bạn có thể gõ `study python` để nhận danh sách tài liệu học Python.",
-                threadID,
-                messageID
-            );
-        }
+        const categories = {
+            programming: ["python", "javascript", "java", "cpp", "ruby", "php"],
+            dataScience: ["machine_learning", "data_analysis", "statistics", "ai"],
+            languages: ["english", "japanese", "korean", "chinese"],
+            design: ["ui_ux", "graphic_design", "web_design", "3d_modeling"],
+            business: ["marketing", "finance", "management", "entrepreneurship"]
+        };
 
         const resources = {
+           
             python: [
-                "1. [Học Python miễn phí tại Codecademy](https://www.codecademy.com/learn/learn-python-3)",
+                {
+                    title: "Codecademy Python Course",
+                    url: "https://www.codecademy.com/learn/learn-python-3",
+                    rating: 4.8,
+                    type: "Interactive"
+                },
                 "2. [Học Python tại W3Schools](https://www.w3schools.com/python/)",
                 "3. [Khóa học Python miễn phí tại Coursera](https://www.coursera.org/courses?query=python)",
                 "4. [Học Python với FreeCodeCamp](https://www.freecodecamp.org/learn/scientific-computing-with-python/)",
@@ -83,15 +77,62 @@ module.exports = {
             ]
         };
 
-        if (resources[topic]) {
-            const response = `Tài liệu học về ${topic}:\n${resources[topic].join("\n")}`;
-            return api.sendMessage(response, threadID, messageID);
-        } else {
+        if (!target[0]) {
+            return api.sendMessage(getHelpMessage(categories), threadID, messageID);
+        }
+
+        const [category, topic] = target;
+        
+        if (!categories[category]) {
             return api.sendMessage(
-                `Xin lỗi, không tìm thấy tài liệu học cho chủ đề "${topic}". Bạn có thể thử với "python", "javascript", "java", "machine learning", "data science", "design", "english", "web development",...`,
+                `Danh mục không hợp lệ. Các danh mục hiện có:\n${Object.keys(categories).join(", ")}`,
+                threadID, 
+                messageID
+            );
+        }
+
+        if (!topic) {
+            return api.sendMessage(
+                `Các chủ đề trong ${category}:\n${categories[category].join(", ")}`,
                 threadID,
                 messageID
             );
         }
+
+        const topicResources = resources[topic];
+        if (!topicResources) {
+            const suggestions = findSimilarTopics(topic, Object.keys(resources));
+            return api.sendMessage(
+                `Không tìm thấy tài liệu cho "${topic}"\nCó thể bạn muốn tìm: ${suggestions.join(", ")}`,
+                threadID,
+                messageID
+            );
+        }
+
+        const response = formatResourceList(topic, topicResources);
+        return api.sendMessage(response, threadID, messageID);
     }
 };
+
+function getHelpMessage(categories) {
+    return `Hướng dẫn sử dụng lệnh study:
+1. Xem danh mục: study <tên danh mục>
+2. Xem tài liệu: study <danh mục> <chủ đề>
+
+Danh mục hiện có:
+${Object.entries(categories)
+    .map(([cat, topics]) => `${cat}: ${topics.join(", ")}`)
+    .join("\n")}`;
+}
+
+function formatResourceList(topic, resources) {
+    return `📚 Tài liệu học ${topic}:\n${resources
+        .map(r => `- ${r.title} (${r.rating}⭐)\n  ${r.url}\n  Loại: ${r.type}`)
+        .join("\n\n")}`;
+}
+
+function findSimilarTopics(search, topics) {
+    return topics.filter(t => 
+        t.includes(search) || search.includes(t)
+    ).slice(0, 3);
+}

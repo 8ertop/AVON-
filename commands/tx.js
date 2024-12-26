@@ -2,7 +2,7 @@ const { randomInt } = require("crypto");
 const path = require("path");
 const fs = require("fs");
 const { createCanvas, loadImage } = require("canvas");
-const { getBalance, updateBalance, loadQuy, saveQuy } = require('../utils/currencies');
+const { getBalance, updateBalance, loadQuy, saveQuy, updateQuestProgress } = require('../utils/currencies');
 
 function formatNumber(number) {
     return number.toLocaleString('vi-VN');  
@@ -104,8 +104,12 @@ module.exports = {
                 let quy = loadQuy();
                 quy += Math.floor(fee);
                 saveQuy(quy);
+
+                updateQuestProgress(senderID, "play_games");
+                updateQuestProgress(senderID, "win_games");
             } else {
                 message += `😢 Bạn đã thua và mất ${formatNumber(betAmount)} Xu.\n`;
+                updateQuestProgress(senderID, "play_games");
             }
 
             if (total === 18 || total === 3) {
