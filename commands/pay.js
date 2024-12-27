@@ -3,8 +3,7 @@ const { createCanvas, loadImage } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 
-// Add at the top of the file
-const transactionsPath = path.join(__dirname, '../utils/transactions.json');
+const transactionsPath = path.join(__dirname, '../commands/json/transactions.json');
 let transactions = {};
 
 try {

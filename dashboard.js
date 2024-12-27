@@ -56,6 +56,11 @@ let responseLatency = 0;
 const { exec } = require('child_process');
 let activeProcess = null;
 
+const { initializeSocket } = require('./utils/logs');
+
+// After creating io
+initializeSocket(io);
+
 io.on('connection', (socket) => {
     console.log('Client connected to socket');
     
@@ -134,11 +139,27 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('restartBot', (passcode) => {
+        if (passcode === restartPasscode) {
+            socket.emit('restartSuccess', 'Bot is restarting...');
+            setTimeout(() => {
+                process.exit(1);
+            }, 2000);
+        } else {
+            socket.emit('restartFailed', 'Invalid passcode');
+        }
+    });
+
     socket.on('disconnect', () => {
         if (activeProcess) {
             activeProcess.kill();
         }
         console.log('Client disconnected');
+    });
+
+    // Add handler for bot logs
+    socket.on('botLog', (data) => {
+        io.emit('botLog', data);
     });
 
     setInterval(() => {

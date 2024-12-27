@@ -5,7 +5,7 @@ const { exec } = require('child_process');
 const FormData = require('form-data');
 
 const cacheDir = path.join(__dirname, 'cache', 'images', 'tiktok');
-const ffmpegPath = 'D:\\ffmpeg-2024-11-25-git-04ce01df0b-full_build\\bin\\ffmpeg.exe';
+const ffmpegPath = 'D:\\ffmpeg\\bin\\ffmpeg.exe';
 
 if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir);

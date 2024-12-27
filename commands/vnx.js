@@ -13,7 +13,7 @@ module.exports = {
     const source = 'https://vnexpress.net/tin-tuc-24h';
 
     try {
-      actions.reply("⏳ Đang tải tin tức từ VnExpress...");
+      const loadingMsg = await actions.reply("⏳ Đang tải tin tức từ VnExpress...");
       
       const response = await axios.get(source);
       const $ = cheerio.load(response.data);
@@ -43,7 +43,9 @@ module.exports = {
         message += `🔗 Link: ${item.link}\n\n`;
       });
 
-      actions.reply(message);
+      actions.reply(message).then(() => {
+        api.unsendMessage(loadingMsg.messageID);
+      });
     } catch (error) {
       console.error(error);
       actions.reply("❌ Đã xảy ra lỗi khi tải tin tức từ VnExpress. Vui lòng thử lại sau.");

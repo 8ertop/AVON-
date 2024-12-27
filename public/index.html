@@ -303,6 +303,7 @@
         </div>
     </div>
 
+    <!-- Replace the old restartModal content with this -->
     <div class="modal fade" id="restartModal" tabindex="-1" role="dialog" aria-labelledby="restartModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -313,8 +314,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info"></div>
-                        This will restart the bot. Please enter the passcode to confirm.
+                    <div class="alert alert-warning">
+                        Warning: This will restart the bot. Please enter the passcode to confirm.
                     </div>
                     <div class="form-group">
                         <input type="password" id="passcodeInput" class="form-control" placeholder="Enter passcode">
@@ -373,6 +374,7 @@
             document.getElementById('host').innerText = data.host || 'N/A';
         });
 
+        // Update the restart button handler
         document.getElementById('restartButton').addEventListener('click', function() {
             const passcode = document.getElementById('passcodeInput').value;
             const statusDiv = document.getElementById('restartStatus');
@@ -387,6 +389,8 @@
             statusDiv.className = 'alert alert-info';
             statusDiv.textContent = 'Attempting to restart...';
             statusDiv.style.display = 'block';
+            
+            // Emit restart event
             socket.emit('restartBot', passcode);
         });
 
@@ -395,7 +399,7 @@
             statusDiv.className = 'alert alert-success';
             statusDiv.textContent = message;
             setTimeout(() => {
-                location.reload();
+                window.location.reload();
             }, 2000);
         });
 

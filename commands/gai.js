@@ -9,43 +9,83 @@ module.exports = {
     onPrefix: true,
     dev: "HNT",
     cooldowns: 10,
+
     config: {
-        apis: [
-            "https://api.waifu.pics/sfw/neko",
-            "https://api.waifu.im/search/?included_tags=waifu",
-            "https://nekos.best/api/v2/neko",
-            "https://api.waifu.pics/sfw/waifu"
-        ]
+        
+        apiUrl: "https://api-gai-xinh.vercel.app/getRandomImage"
+       
     },
-    
+
     onLaunch: async function ({ event, api }) {
         try {
-            
-            const randomApi = this.config.apis[Math.floor(Math.random() * this.config.apis.length)];
-            const response = await axios.get(randomApi);
-            
-            let imageUrl;
-            if (randomApi.includes('waifu.im')) {
-                imageUrl = response.data.images[0].url;
-            } else if (randomApi.includes('nekos.best')) {
-                imageUrl = response.data.results[0].url;
-            } else {
-                imageUrl = response.data.url;
+            console.log('Đang gọi API...');
+            const response = await axios.get(this.config.apiUrl, {
+                timeout: 5000,
+                maxRedirects: 5,
+                validateStatus: function (status) {
+                    return status >= 200 && status < 500;
+                }
+            });
+
+            if (response.status === 401) {
+                throw new Error('API yêu cầu xác thực. Vui lòng kiểm tra lại URL.');
             }
 
-            const tempFilePath = path.join(__dirname, 'cache', `gai-${Date.now()}.jpg`);
+            if (!response.data || typeof response.data !== 'object') {
+                console.error('Invalid response format:', response.data);
+                throw new Error('API trả về dữ liệu không hợp lệ');
+            }
+
+            const imageUrl = response.data.imageUrl;
+            if (!imageUrl || !imageUrl.startsWith('https://')) {
+                throw new Error('URL ảnh không hợp lệ');
+            }
+
+            const cacheDir = path.join(__dirname, 'cache');
+            if (!fs.existsSync(cacheDir)) {
+                fs.mkdirSync(cacheDir, { recursive: true });
+            }
+
+            const tempFilePath = path.join(cacheDir, `gai-${Date.now()}.jpg`);
             
-            const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+            const imageResponse = await axios.get(imageUrl, { 
+                responseType: 'arraybuffer',
+                timeout: 5000
+            });
+            
             fs.writeFileSync(tempFilePath, imageResponse.data);
 
-            api.sendMessage({
+            await api.sendMessage({
                 body: "『 🌸 』→ Ảnh của bạn đây\n『 💓 』→ Chúc bạn ngày mới tốt lành",
                 attachment: fs.createReadStream(tempFilePath)
-            }, event.threadID, () => fs.unlinkSync(tempFilePath));
+            }, event.threadID, () => {
+                try {
+                    fs.unlinkSync(tempFilePath);
+                } catch (err) {
+                    console.error('Error deleting temp file:', err);
+                }
+            });
 
         } catch (error) {
-            console.error(error);
-            api.sendMessage("❌ Đã có lỗi xảy ra, vui lòng thử lại sau!", event.threadID);
+            console.error('Detailed error:', {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data,
+                config: error.config
+            });
+            
+            let errorMsg = "❌ ";
+            if (error.response?.status === 401) {
+                errorMsg += "API cần xác thực, vui lòng liên hệ admin.";
+            } else if (error.code === 'ECONNREFUSED') {
+                errorMsg += "Không thể kết nối tới server.";
+            } else if (error.code === 'ECONNABORTED') {
+                errorMsg += "Kết nối bị gián đoạn, thử lại sau.";
+            } else {
+                errorMsg += error.message;
+            }
+            
+            api.sendMessage(errorMsg, event.threadID);
         }
     }
 };

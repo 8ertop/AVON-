@@ -133,14 +133,27 @@ const reloadModules = () => {
     const eventCommands = loadEventCommands();
     console.log(boldText(gradient.passion("[ BOT MODULES RELOADED ]")));
 };
+
 const startBot = () => {
-   
     require('./dashboard.js');
     
     console.log(boldText(gradient.retro("Logging via AppState...")));
 
     login({ appState: JSON.parse(fs.readFileSync(config.APPSTATE_PATH, "utf8")) }, (err, api) => {
-        if (err) return console.error(boldText(gradient.passion(`Login error: ${JSON.stringify(err)}`)));
+        if (err) {
+            console.error(boldText(gradient.passion(`Login error: ${JSON.stringify(err)}`)));
+            
+            if (err.code === 'ECONNRESET') {
+                console.log(boldText(gradient.cristal("Detected ECONNRESET error, attempting to restart in 5 seconds...")));
+                setTimeout(() => {
+                    console.clear();
+                    startBot();
+                }, 5000);
+                return;
+            }
+            return;
+        }
+
         console.log(boldText(gradient.retro("SUCCESSFULLY LOGGED IN VIA APPSTATE")));
         console.log(boldText(gradient.retro("Picked Proxy IP: " + proxy)));
         console.log(boldText(gradient.vice("━━━━━━━[ COMMANDS DEPLOYMENT ]━━━━━━━━━━━")));

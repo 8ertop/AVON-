@@ -9,7 +9,7 @@ const simpleYT = require('simple-youtube-api');
 const youtube = new simpleYT('AIzaSyCMWAbuVEw0H26r94BhyFU4mTaP5oUGWRw');
 const getFBInfo = require('@xaviabot/fb-downloader');
 
-const ffmpegPath = 'D:\\ffmpeg-2024-11-25-git-04ce01df0b-full_build\\bin\\ffmpeg.exe';
+const ffmpegPath = 'D:\\ffmpeg\\bin\\ffmpeg.exe';
 const cacheDir = path.join(__dirname, 'cache');
 if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 

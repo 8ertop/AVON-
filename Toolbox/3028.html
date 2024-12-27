@@ -280,6 +280,11 @@
             appendOutput('Disconnected from console server', '#ff416c');
         });
 
+        socket.on('botLog', (data) => {
+            appendOutput(data.output, data.color);
+            smoothScroll();
+        });
+
         function appendOutput(text, color) {
             const lines = text.split('\n');
             lines.forEach(line => {

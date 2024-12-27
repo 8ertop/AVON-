@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const userDataFile = path.join(__dirname,'../events/cache/userData.json');
-const transactionsPath = path.join(__dirname, '../utils/transactions.json');
+const transactionsPath = path.join(__dirname, '../commands/json/transactions.json');
 let userData = {};
 let transactions = {};
 

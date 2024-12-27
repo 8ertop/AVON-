@@ -41,7 +41,14 @@ module.exports = {
                 }
             };
 
-            const speedTest = new fast({
+            const downloadSpeedTest = new fast({
+                token: "YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm",
+                verbose: false,
+                timeout: 10000,
+                https: true,
+            });
+
+            const uploadSpeedTest = new fast({
                 token: "YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm",
                 verbose: false,
                 timeout: 10000,
@@ -49,10 +56,18 @@ module.exports = {
             });
 
             await updateProgress();
-            const downloadSpeed = await speedTest.getSpeed();
+            const downloadSpeed = await downloadSpeedTest.getSpeed().catch(err => {
+                console.error("Download speed test error:", err);
+                return 0;
+            });
+
             await updateProgress();
-            const uploadSpeed = await speedTest.getSpeed();
+            const uploadSpeed = await uploadSpeedTest.getSpeed().catch(err => {
+                console.error("Upload speed test error:", err);
+                return 0;
+            });
             
+            await updateProgress();
             const result = `🌐 Chi tiết tốc độ mạng:\n\n` +
                 `📥 Tốc độ tải xuống: ${(downloadSpeed / 1024 / 1024).toFixed(2)} Mbps\n` +
                 `📤 Tốc độ tải lên: ${(uploadSpeed / 1024 / 1024).toFixed(2)} Mbps\n` +
