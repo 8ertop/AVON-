@@ -3,6 +3,16 @@
 const utils = require("../utils");
 const log = require("npmlog");
 
+// Add custom error class if not exists
+if (!utils.CustomError) {
+  utils.CustomError = class CustomError extends Error {
+    constructor(message) {
+      super(message);
+      this.name = 'CustomError';
+    }
+  };
+}
+
 module.exports = function (defaultFuncs, api, ctx) {
   return function changeThreadColor(color, threadID, callback) {
     let resolveFunc = function () {};
@@ -50,7 +60,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
         if (resData[resData.length - 1].error_results > 0) {
-          throw new utils.CustomError(resData[0].o0.errors);
+          throw resData[0].o0.errors || new Error("Unknown error occurred");
         }
 
         return callback();

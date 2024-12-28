@@ -9,8 +9,21 @@ const ITAG = 140;
 
 const downloadMusicFromYoutube = async (link, filePath, itag = 140) => {
     try {
-        const data = await ytdl.getInfo(link);
-        const format = ytdl.chooseFormat(data.formats, { quality: 'highestaudio', filter: 'audioonly' });
+        const data = await ytdl.getInfo(link, {
+            headers: {
+                'Cookie': '',
+                'Accept': '*/*',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+            }
+        });
+
+        const formats = ytdl.filterFormats(data.formats, 'audioonly');
+        let format = formats.find(f => f.itag === 140); // Try M4A first
+        
+        if (!format) {
+            format = formats.find(f => f.audioQuality === 'AUDIO_QUALITY_MEDIUM'); // Fallback to medium quality
+        }
         
         if (!format) throw new Error('Không tìm thấy định dạng âm thanh phù hợp');
 
@@ -21,25 +34,40 @@ const downloadMusicFromYoutube = async (link, filePath, itag = 140) => {
         };
 
         return new Promise((resolve, reject) => {
-            ytdl(link, { 
+            const stream = ytdl(link, { 
                 format: format,
-                filter: 'audioonly',
-                quality: 'highestaudio',
+                requestOptions: {
+                    headers: {
+                        'Cookie': '',
+                        'Accept': '*/*',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+                    }
+                },
                 highWaterMark: 1<<25
-            })
-            .on('error', (err) => {
-                reject(err);
-            })
-            .pipe(fs.createWriteStream(filePath))
-            .on('finish', () => {
-                resolve({
-                    data: filePath,
-                    info: result,
-                });
-            })
-            .on('error', reject);
+            });
+
+            stream.on('error', (err) => {
+                if (err.statusCode === 403) {
+                    reject(new Error('Không thể tải video này do hạn chế của YouTube. Vui lòng thử video khác.'));
+                } else {
+                    reject(err);
+                }
+            });
+
+            stream.pipe(fs.createWriteStream(filePath))
+                .on('finish', () => {
+                    resolve({
+                        data: filePath,
+                        info: result,
+                    });
+                })
+                .on('error', reject);
         });
     } catch (error) {
+        if (error.statusCode === 403) {
+            throw new Error('Không thể tải video này do hạn chế của YouTube. Vui lòng thử video khác.');
+        }
         console.error('Lỗi tải nhạc:', error);
         throw error;
     }

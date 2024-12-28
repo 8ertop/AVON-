@@ -21,19 +21,23 @@ function getRandomImgUrl() {
 }
 
 function calculateRequiredXp(level) {
-    const baseXp = 20; 
+    const baseXp = 100;
     let growthFactor;
 
-    if (level < 6) {
-        growthFactor = 1.6;
-    } else if (level < 10) {
-        growthFactor = 1.35;
-    } else {
+    if (level < 5) {
         growthFactor = 1.2;
+    } else if (level < 10) {
+        growthFactor = 1.3;
+    } else if (level < 20) {
+        growthFactor = 1.4;
+    } else if (level < 50) {
+        growthFactor = 1.5;
+    } else {
+        growthFactor = 1.6;
     }
 
-    if (level === 1) return 0;
-    return Math.floor(baseXp * Math.pow(growthFactor, level - 2));
+    if (level === 1) return baseXp;
+    return Math.floor(baseXp * Math.pow(growthFactor, level - 1));
 }
 
 function updateUserRank(userData) {
@@ -60,29 +64,85 @@ async function circleImage(imageBuffer, size) {
     return canvas.toBuffer();
 }
 
-async function getUserName(api, senderID) {
-    let userName;
-    const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
+const nameCachePath = path.join(__dirname, '../database/json/usernames.json');
+let nameCache = {};
 
-    if (userData[senderID] && userData[senderID].name) {
-        userName = userData[senderID].name;
-    } else {
-        try {
-            const userInfo = await api.getUserInfo(senderID);
-            userName = userInfo[senderID]?.name || "Name";
-
-            if (!userData[senderID]) {
-                userData[senderID] = {};
+function initNameCache() {
+    try {
+        if (fs.existsSync(nameCachePath)) {
+            nameCache = JSON.parse(fs.readFileSync(nameCachePath));
+        } else {
+            if (!fs.existsSync(path.dirname(nameCachePath))) {
+                fs.mkdirSync(path.dirname(nameCachePath), { recursive: true });
             }
-            userData[senderID].name = userName;
-            fs.writeFileSync(userDataPath, JSON.stringify(userData, null, 2));
-        } catch (error) {
-            console.log(error);
-            userName = "Name";
+            fs.writeFileSync(nameCachePath, JSON.stringify({}));
+        }
+    } catch (err) {
+        console.error('Name cache init error:', err);
+    }
+}
+
+function saveName(userID, name) {
+    try {
+        nameCache[userID] = {
+            name: name,
+            timestamp: Date.now()
+        };
+        fs.writeFileSync(nameCachePath, JSON.stringify(nameCache, null, 2));
+    } catch (err) {
+        console.error('Name cache save error:', err);
+    }
+}
+
+async function getUserName(api, senderID, threadID) {
+    
+    if (!nameCache) initNameCache();
+
+    if (nameCache[senderID]) {
+        const cached = nameCache[senderID];
+      
+        if (Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
+            return cached.name;
         }
     }
 
-    return userName;
+    try {
+    
+        try {
+            const userInfo = await api.getUserInfo(senderID);
+            if (userInfo[senderID]?.name) {
+                saveName(senderID, userInfo[senderID].name);
+                return userInfo[senderID].name;
+            }
+        } catch (apiError) {
+            console.log('API getUserInfo error:', apiError);
+        }
+
+        try {
+            const threadInfo = await api.getThreadInfo(threadID);
+            const participant = threadInfo.userInfo?.find(user => user.id === senderID);
+            if (participant?.name) {
+                saveName(senderID, participant.name);
+                return participant.name;
+            }
+        } catch (threadError) {
+            console.log('Thread info error:', threadError);
+        }
+
+        const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
+        if (userData[senderID]?.name) {
+            saveName(senderID, userData[senderID].name);
+            return userData[senderID].name;
+        }
+
+        const fallbackName = `Người dùng ${senderID}`;
+        saveName(senderID, fallbackName);
+        return fallbackName;
+
+    } catch (error) {
+        console.log('getUserName error:', error);
+        return `Người dùng ${senderID}`;
+    }
 }
 
 async function createCanvasBackground(ctx, width, height, level) {
@@ -284,11 +344,25 @@ module.exports = {
 
             let userData = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
             const userId = event.senderID;
+            const threadID = event.threadID; 
 
             if (!userData[userId]) {
-                userData[userId] = { exp: 0, level: 1, name: await getUserName(api, userId) };
+                userData[userId] = { 
+                    exp: 0, 
+                    level: 1, 
+                    name: await getUserName(api, userId, threadID) 
+                };
             } else {
-                userData[userId].exp += 1;
+                let expGain = 1;
+                if (message.length > 10) expGain = 2;
+                if (message.length > 50) expGain = 3;
+                if (message.length > 100) expGain = 4;
+                
+                const now = Date.now();
+                if (!userData[userId].lastMessageTime || now - userData[userId].lastMessageTime >= 10000) {
+                    userData[userId].exp += expGain;
+                    userData[userId].lastMessageTime = now;
+                }
             }
 
             const expNeeded = calculateRequiredXp(userData[userId].level);

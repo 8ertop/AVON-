@@ -39,6 +39,12 @@
       "amount": 50500,
       "timestamp": 1735265395507,
       "description": "Chuyển 50000 Xu cho Anh La Phu Dz"
+    },
+    {
+      "type": "in",
+      "amount": 14000,
+      "timestamp": 1735354294832,
+      "description": "Nhận 14000 Xu từ quynh giang"
     }
   ],
   "100081800629553": [
@@ -55,6 +61,12 @@
       "amount": 60600,
       "timestamp": 1735265148882,
       "description": "Chuyển 60000 Xu cho Pham Minh Dang"
+    },
+    {
+      "type": "out",
+      "amount": 14140,
+      "timestamp": 1735354294832,
+      "description": "Chuyển 14000 Xu cho Pham Minh Dang"
     }
   ],
   "61569008916749": [

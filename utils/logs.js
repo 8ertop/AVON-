@@ -8,7 +8,6 @@ const moment = require("moment-timezone");
 
 let io = null;
 
-// Add this function to initialize socket.io
 const initializeSocket = (socketIO) => {
     io = socketIO;
 };

@@ -23,14 +23,11 @@
   },
   "100068382888605": {
     "progress": {
-      "play_games": 14,
-      "win_games": 7,
-      "play_bctc": 5,
-      "win_bctc": 1
+      "play_games": 2
     },
     "completed": {},
-    "lastReset": "Fri Dec 27 2024",
-    "lastRewardClaim": "Fri Dec 27 2024"
+    "lastReset": "Sat Dec 28 2024",
+    "lastRewardClaim": "Sat Dec 28 2024"
   },
   "61570532692675": {
     "progress": {
@@ -123,7 +120,7 @@
       "play_games": 1
     },
     "completed": {},
-    "lastReset": "Fri Dec 27 2024",
+    "lastReset": "Sat Dec 28 2024",
     "lastRewardClaim": null
   },
   "100050363228652": {

@@ -1,8 +1,9 @@
 const translate = require('translate-google');
 const { getInfoFromName } = require('mal-scraper');
 const request = require('request');
-const fs = require('fs');
-const path = require ('path');
+const fs = require('fs').promises;
+const fsSync = require('fs');
+const path = require('path');
 
 module.exports = {
     name: "anime",
@@ -15,58 +16,78 @@ module.exports = {
     cooldowns: 5,
 
     onLaunch: async function ({ api, event, target, actions }) {
-        const query = target.join(" ").trim(); 
+        const query = target.join(" ").trim();
         
-        if (!query) {
-            return await actions.reply("❎ Vui lòng cung cấp tên anime cần tìm kiếm.\nUsage: anime [tên anime cần tìm]");
+        if (!query || query.length < 2) {
+            return await actions.reply("❎ Vui lòng nhập tên anime cần tìm (ít nhất 2 ký tự)");
+        }
+
+        const cachePath = path.join(__dirname, 'cache');
+        if (!fsSync.existsSync(cachePath)) {
+            fsSync.mkdirSync(cachePath, { recursive: true });
         }
 
         try {
-            const Anime = await getInfoFromName(query);
-            const getURL = Anime.picture;
-            const ext = getURL.substring(getURL.lastIndexOf(".") + 1);
-            const imagePath = path.join(__dirname, 'cache', `mal.${ext}`)
+            const anime = await getInfoFromName(query);
+            if (!anime) throw new Error("Không tìm thấy thông tin anime này");
 
-            if (!Anime.genres || Anime.genres.length === 0) Anime.genres = ["Không có"];
+            const imagePath = path.join(cachePath, `mal_${Date.now()}.${getImageExt(anime.picture)}`);
             
-
-            const title = Anime.title;
-            const japTitle = Anime.japaneseTitle;
-            const type = Anime.type;
-            const status = Anime.status;
-            const premiered = Anime.premiered;
-            const broadcast = Anime.broadcast;
-            const aired = Anime.aired;
-            const producers = Anime.producers;
-            const studios = Anime.studios;
-            const source = Anime.source;
-            const episodes = Anime.episodes;
-            const duration = Anime.duration;
-            const genres = Anime.genres.join(", ");
-            const popularity = Anime.popularity;
-            const ranked = Anime.ranked;
-            const score = Anime.score;
-            const rating = Anime.rating;
-            const synopsis = Anime.synopsis;
-            const url = Anime.url;
-
-            const translatedSynopsis = await translate(synopsis, { from: 'en', to: 'vi' });
-
-            const callback = function () {
-                actions.send({
-                    body: `📖 THÔNG TIN ANIME\n\n🎥 Tên: ${title}\n🎌 Tên tiếng Nhật: ${japTitle}\n📺 Loại: ${type}\n⚡️ Trạng thái: ${status}\n🗓️ Khởi chiếu: ${premiered}\n📡 Phát sóng: ${broadcast}\n📅 Ra mắt: ${aired}\n🎬 Nhà sản xuất: ${producers}\n🎓 Studio: ${studios}\n📝 Nguồn: ${source}\n🎞️ Số tập: ${episodes}\n⌛️ Thời lượng: ${duration}\n🎭 Thể loại: ${genres}\n🌟 Độ phổ biến: ${popularity}\n🔝 Xếp hạng: ${ranked}\n🎖️ Điểm số: ${score}\n🔞 Đánh giá: ${rating}\n\n📝 Nội dung:\n${translatedSynopsis}\n\n🌐 Link chi tiết: ${url}`,
-                    attachment: fs.createReadStream(imagePath)
-                }, event.threadID, () => {
-                    if (fs.existsSync(imagePath)) {
-                        fs.unlinkSync(imagePath);
-                    }
-                }, event.messageID);
-            };
-
-            request(getURL).pipe(fs.createWriteStream(imagePath)).on("close", callback);
+            await downloadImage(anime.picture, imagePath);
+            const translatedSynopsis = await translate(anime.synopsis || "Không có mô tả", { from: 'en', to: 'vi' });
+            
+            const msg = formatAnimeMessage(anime, translatedSynopsis);
+            
+            await actions.send({
+                body: msg,
+                attachment: fsSync.createReadStream(imagePath)
+            }, event.threadID, async () => {
+                try {
+                    await fs.unlink(imagePath);
+                } catch (err) {
+                    console.error("Failed to delete temp file:", err);
+                }
+            }, event.messageID);
 
         } catch (err) {
-            return await actions.reply("⚠️ " + err.message);
+            return await actions.reply(`⚠️ Lỗi: ${err.message || "Không thể tìm thấy anime"}`);
         }
     }
 };
+
+function getImageExt(url) {
+    return url.split('.').pop() || 'jpg';
+}
+
+function formatAnimeMessage(anime, synopsis) {
+    return `📖 THÔNG TIN ANIME\n\n` +
+           `🎥 Tên: ${anime.title}\n` +
+           `🎌 Tên tiếng Nhật: ${anime.japaneseTitle}\n` +
+           `📺 Loại: ${anime.type}\n` +
+           `⚡️ Trạng thái: ${anime.status}\n` +
+           `🗓️ Khởi chiếu: ${anime.premiered}\n` +
+           `📡 Phát sóng: ${anime.broadcast}\n` +
+           `📅 Ra mắt: ${anime.aired}\n` +
+           `🎬 Nhà sản xuất: ${anime.producers}\n` +
+           `🎓 Studio: ${anime.studios}\n` +
+           `📝 Nguồn: ${anime.source}\n` +
+           `🎞️ Số tập: ${anime.episodes}\n` +
+           `⌛️ Thời lượng: ${anime.duration}\n` +
+           `🎭 Thể loại: ${(anime.genres || ["Không có"]).join(", ")}\n` +
+           `🌟 Độ phổ biến: ${anime.popularity}\n` +
+           `🔝 Xếp hạng: ${anime.ranked}\n` +
+           `🎖️ Điểm số: ${anime.score}\n` +
+           `🔞 Đánh giá: ${anime.rating}\n\n` +
+           `📝 Nội dung:\n${synopsis}\n\n` +
+           `🌐 Link chi tiết: ${anime.url}`;
+}
+
+function downloadImage(url, dest) {
+    return new Promise((resolve, reject) => {
+        request(url)
+            .on('error', reject)
+            .pipe(fsSync.createWriteStream(dest))
+            .on('close', resolve)
+            .on('error', reject);
+    });
+}
