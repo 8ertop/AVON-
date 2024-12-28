@@ -28,28 +28,40 @@ module.exports = {
         }
 
         try {
+           a
             const anime = await getInfoFromName(query);
             if (!anime) throw new Error("Không tìm thấy thông tin anime này");
 
-            const imagePath = path.join(cachePath, `mal_${Date.now()}.${getImageExt(anime.picture)}`);
-            
-            await downloadImage(anime.picture, imagePath);
+            let imagePath = null;
+            if (anime.picture) {
+                imagePath = path.join(cachePath, `mal_${Date.now()}.${getImageExt(anime.picture)}`);
+                await downloadImage(anime.picture, imagePath);
+            }
+
             const translatedSynopsis = await translate(anime.synopsis || "Không có mô tả", { from: 'en', to: 'vi' });
             
             const msg = formatAnimeMessage(anime, translatedSynopsis);
             
-            await actions.send({
-                body: msg,
-                attachment: fsSync.createReadStream(imagePath)
-            }, event.threadID, async () => {
-                try {
-                    await fs.unlink(imagePath);
-                } catch (err) {
-                    console.error("Failed to delete temp file:", err);
-                }
-            }, event.messageID);
+            const attachments = imagePath ? [fsSync.createReadStream(imagePath)] : [];
+            await actions.send(
+                { body: msg, attachment: attachments },
+                event.threadID,
+                async () => {
+                 
+                    if (imagePath) {
+                        try {
+                            await fs.unlink(imagePath);
+                        } catch (err) {
+                            console.error("Failed to delete temp file:", err);
+                        }
+                    }
+                },
+                event.messageID
+            );
 
         } catch (err) {
+         
+            console.error("Error fetching anime info:", err);
             return await actions.reply(`⚠️ Lỗi: ${err.message || "Không thể tìm thấy anime"}`);
         }
     }

@@ -21,7 +21,7 @@ function getRandomImgUrl() {
 }
 
 function calculateRequiredXp(level) {
-    const baseXp = 100;
+    const baseXp = 50;
     let growthFactor;
 
     if (level < 5) {

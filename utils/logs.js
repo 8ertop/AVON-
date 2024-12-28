@@ -76,7 +76,6 @@ const logChatRecord = async (api, event) => {
 
         console.log(logMessage);
         
-        // Emit to socket if available
         if (io) {
             io.emit('botLog', { 
                 output: logMessage,
@@ -98,7 +97,6 @@ const logChatRecord = async (api, event) => {
 
         console.log(logMessage);
         
-        // Emit to socket if available
         if (io) {
             io.emit('commandOutput', { 
                 output: logMessage,
@@ -163,5 +161,5 @@ module.exports = {
     notifyAdmins, 
     handleBotAddition, 
     handleBotRemoval,
-    initializeSocket  // Export the new function
+    initializeSocket  
 };

@@ -23,24 +23,48 @@ module.exports = {
             if (leftParticipantFbId == api.getCurrentUserID()) return;
             
             const isKicked = event.author !== leftParticipantFbId;
-            if (isKicked) return; 
+            if (isKicked) return;
+
+            const userName = event.logMessageData.leftParticipantFbId_name || 
+                            event.logMessageData.name ||
+                            "Thành viên";
             
-            const userName = (await api.getUserInfo(leftParticipantFbId))[leftParticipantFbId].name;
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            let retryCount = 0;
+            const maxRetries = 3;
             
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            await api.addUserToGroup(leftParticipantFbId, threadID);
-            
-            api.sendMessage(
-                `🔒 Đã thêm ${userName} trở lại nhóm!\n⚠️ Nhóm đang bật chế độ chống rời nhóm.`,
-                threadID
-            );
+            while (retryCount < maxRetries) {
+                try {
+                    await api.addUserToGroup(leftParticipantFbId, threadID);
+                    
+                    await api.sendMessage(
+                        `🔒 Đã thêm ${userName} trở lại nhóm!\n⚠️ Nhóm đang bật chế độ chống rời nhóm.`,
+                        threadID
+                    );
+                    return;
+                } catch (addError) {
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+                        continue;
+                    }
+                    throw addError;
+                }
+            }
         } catch (error) {
             console.error("Anti-out error:", error);
-            api.sendMessage(
-                "⚠️ Không thể thêm lại thành viên vào nhóm. Có thể bot không phải là quản trị viên hoặc người dùng đã chặn bot.",
-                threadID
-            );
+            let errorMsg = "⚠️ Không thể thêm lại thành viên vào nhóm. ";
+            
+            if (error.error === 6) {
+                errorMsg += "Người dùng đã chặn bot.";
+            } else if (error.error === 3252001) {
+                errorMsg += "Bot đang bị Facebook hạn chế tính năng.";
+            } else {
+                errorMsg += "Có thể bot không phải là quản trị viên.";
+            }
+
+            api.sendMessage(errorMsg, threadID);
         }
     }
 };

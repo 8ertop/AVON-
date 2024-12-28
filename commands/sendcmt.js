@@ -18,19 +18,23 @@ module.exports = {
       const regexPfbid = /pfbid\w+/;
       const regexPostSegment = /\/posts\/(\w+)/;
       const regexGroupID = /\/groups\/[^/]+\/permalink\/(\d+)/;
+      const regexSharePost = /\share\/p\/([\w\d]+)/;
   
       let postID = url.match(regexPfbid);
-  
+
       if (!postID) {
-        let match = url.match(regexPostSegment);
-        if (!match) {
-          match = url.match(regexGroupID);
-        }
-        postID = match ? match[1] : null;
+          let match = url.match(regexPostSegment);
+          if (!match) {
+              match = url.match(regexGroupID);
+          }
+          if (!match) {
+              match = url.match(regexSharePost)
+          }
+          postID = match ? match[1] : null;
       } else {
-        postID = postID[0];
+          postID = postID[0];
       }
-  
+
       api.editMessage("Đang trích xuất URL bài viết thành POST ID", sending.messageID, event.threadID, event.messageID);
   
       if (!postID) {

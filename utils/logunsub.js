@@ -1,49 +1,53 @@
 const handleLogUnsubscribe = async (api, event) => {
-  
-  if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID()) return;
+    if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID()) return;
 
-  try {
-      
-      const { threadName, participantIDs } = await api.getThreadInfo(event.threadID);
-      const isSelfLeave = event.author == event.logMessageData.leftParticipantFbId;
-      const leftUserId = event.logMessageData.leftParticipantFbId;
+    try {
+        let threadInfo;
+        try {
+            threadInfo = await api.getThreadInfo(event.threadID);
+        } catch (error) {
+            console.error("Error getting thread info:", error);
+            threadInfo = { participantIDs: [], threadName: "Unnamed group" };
+        }
 
-      const userInfo = await api.getUserInfo(leftUserId);
-      const userName = userInfo[leftUserId]?.name || "Người dùng không xác định";
+        const { threadName, participantIDs } = threadInfo;
+        const isSelfLeave = event.author == event.logMessageData.leftParticipantFbId;
+        const leftUserId = event.logMessageData.leftParticipantFbId;
+       
+        const userName = event.logMessageData.leftParticipantFbId_name || "Thành viên";
+        const adminName = event.logMessageData.author_name || "Quản trị viên";
 
-      const adminInfo = isSelfLeave ? null : await api.getUserInfo(event.author);
-      const adminName = adminInfo?.[event.author]?.name || "Quản trị viên không xác định";
+        const actionType = isSelfLeave 
+            ? "đã tự rời khỏi nhóm"
+            : `đã bị đá bởi ${adminName}`;
 
-      const actionType = isSelfLeave 
-          ? "đã tự rời khỏi nhóm."
-          : `đã bị đá bởi ${adminName}.`;
+        await api.sendMessage(
+            `🚪 ${userName} ${actionType}.\n👥 Thành viên còn lại: ${participantIDs.length}`,
+            event.threadID
+        );
 
-      await api.shareContact(
-          `🚪 ${userName} ${actionType}\n📌 Nhóm: ${threadName || "Unnamed group"}\n👥 Thành viên còn lại: ${participantIDs.length}`,
-          leftUserId,
-          event.threadID
-      );
+        if (participantIDs.length < 5) {
+            try {
+                await api.sendMessage(
+                    `⚠️ Cảnh báo: Nhóm hiện chỉ còn ${participantIDs.length} thành viên!`,
+                    event.threadID
+                );
+            } catch (error) {
+                console.error("Error sending warning message:", error);
+            }
+        }
 
-      if (participantIDs.length < 5) {
-          api.sendMessage(
-              `⚠️ Cảnh báo: Nhóm "${threadName}" hiện chỉ còn ${participantIDs.length} thành viên!`,
-              event.threadID
-          );
-      }
-
-      // Lưu lịch sử sự kiện (tuỳ thích chọn cũng được , không thì thôi :))) )
-      // logEventToFileOrDB({
-      //     groupId: event.threadID,
-      //     groupName: threadName,
-      //     userName,
-      //     actionType,
-      //     timestamp: new Date()
-      // });
-
-  } catch (err) {
-      console.error("ERROR trong handleLogUnsubscribe:", err);
-      api.sendMessage("❌ Đã xảy ra lỗi khi xử lý sự kiện rời nhóm.", event.threadID);
-  }
+    } catch (err) {
+        console.error("ERROR trong handleLogUnsubscribe:", err);
+        try {
+            await api.sendMessage(
+                "❌ Đã xảy ra lỗi khi xử lý sự kiện rời nhóm.",
+                event.threadID
+            );
+        } catch (error) {
+            console.error("Failed to send error message:", error);
+        }
+    }
 };
 
 module.exports = { handleLogUnsubscribe };

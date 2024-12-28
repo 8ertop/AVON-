@@ -12,7 +12,6 @@ module.exports = {
         const botID = api.getCurrentUserID();
         const out = msg => api.sendMessage(msg, threadID, messageID);
 
-        // Check if user is admin
         const threadInfo = await api.getThreadInfo(threadID);
         const isAdmin = threadInfo.adminIDs.some(admin => admin.id === senderID);
         if (this.adminRequired && !isAdmin) return out("⚠️ Chỉ admin mới có thể sử dụng lệnh này!");
@@ -22,7 +21,6 @@ module.exports = {
         let success = 0, failed = 0;
         const results = [];
 
-        // Process multiple targets
         for (const user of target) {
             try {
                 if (!isNaN(user)) {

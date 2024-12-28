@@ -45,6 +45,8 @@
     "freeport": "^1.0.5",
     "fs": "^0.0.1-security",
     "fs-extra": "^11.2.0",
+    "gif-frames": "^1.0.1",
+    "gifencoder": "^2.0.1",
     "got": "^11.8.6",
     "gradient-string": "^2.0.2",
     "gtts": "^0.2.1",

@@ -9,6 +9,9 @@ const ITAG = 140;
 
 const downloadMusicFromYoutube = async (link, filePath, itag = 140) => {
     try {
+        const cacheDir = path.dirname(filePath);
+        await fs.ensureDir(cacheDir);
+
         const data = await ytdl.getInfo(link, {
             headers: {
                 'Cookie': '',
@@ -19,10 +22,10 @@ const downloadMusicFromYoutube = async (link, filePath, itag = 140) => {
         });
 
         const formats = ytdl.filterFormats(data.formats, 'audioonly');
-        let format = formats.find(f => f.itag === 140); // Try M4A first
+        let format = formats.find(f => f.itag === 140); 
         
         if (!format) {
-            format = formats.find(f => f.audioQuality === 'AUDIO_QUALITY_MEDIUM'); // Fallback to medium quality
+            format = formats.find(f => f.audioQuality === 'AUDIO_QUALITY_MEDIUM');
         }
         
         if (!format) throw new Error('Không tìm thấy định dạng âm thanh phù hợp');
@@ -85,17 +88,24 @@ module.exports = {
 
     onLaunch: async function({ api, event, target = [] }) {
         const { threadID, messageID, senderID } = event;
+        let filePath = path.resolve(__dirname, 'cache', `sing-${senderID}.mp3`);
 
         if (target.length < 1) {
             return api.sendMessage("❯ Vui lòng nhập từ khóa tìm kiếm hoặc liên kết YouTube!", threadID, messageID);
         }
 
         const keywordSearch = target.join(" ");
-        const filePath = path.resolve(__dirname, 'cache', `sing-${senderID}.mp3`);
 
         try {
             if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
+                try {
+                    fs.unlinkSync(filePath);
+                } catch (err) {
+                    console.error("Error cleaning up file:", err);
+               
+                    const timestamp = Date.now();
+                    filePath = path.resolve(__dirname, 'cache', `sing-${senderID}-${timestamp}.mp3`);
+                }
             }
 
             if (target[0]?.startsWith("https://")) {
@@ -159,7 +169,11 @@ module.exports = {
             }
         } catch (error) {
             console.error("Lỗi:", error);
-            return api.sendMessage(`❌ Lỗi: ${error.message}`, threadID, messageID);
+            let errorMessage = error.message;
+            if (error.code === 'EPERM') {
+                errorMessage = 'Không thể truy cập file. Vui lòng thử lại sau hoặc kiểm tra quyền truy cập thư mục.';
+            }
+            return api.sendMessage(`❌ Lỗi: ${errorMessage}`, threadID, messageID);
         }
     }
 };
