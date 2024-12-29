@@ -1,6 +1,7 @@
 module.exports = {
     name: "emoji",
     dev: "HNT",
+    usedby: 0,
     info: "Mã hóa và giải mã văn bản thành Emoji.",
     onPrefix: true,
     usages: ".emoji encode [văn bản] | .emoji decode [emoji]: Mã hóa và giải mã văn bản thành Emoji.",

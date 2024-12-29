@@ -10,6 +10,7 @@ module.exports = {
     info: 'Xem giá tiền điện tử',
     dev: 'Hoàng Ngọc Từ',
     onPrefix: true,
+    usedby: 0,
     dmUser: false,
     nickName: ['crypto', 'btc', 'bitcoin'],
     usages: 'crypto\n\nHướng dẫn sử dụng:\n' +

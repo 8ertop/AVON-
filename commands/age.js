@@ -14,7 +14,8 @@ faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 module.exports = {
   name: "age",
   dev: "HNT",
-  info: "Đoán tuổi và cảm xúc của người trong ảnh, đánh giá độ đẹp trai or đẹp gái.",
+  usedby: 0,
+  info: "Đoán tuổi và cảm xúc của người trong ảnh",
   usages: "[reply ảnh]",
   onPrefix: true,
   cooldowns: 5,

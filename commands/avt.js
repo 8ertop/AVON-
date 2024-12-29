@@ -8,6 +8,7 @@ module.exports = {
   info: "Lấy ảnh avatar của người dùng",
   onPrefix: true,
   dmUser: false,
+  usedby: 0,
   usages: "avt ID, avt Reply, avt @Tag",
   cooldowns: 0,
 

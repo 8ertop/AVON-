@@ -6,6 +6,7 @@ module.exports = {
     info: "Hiển thị thông tin chi tiết về nhóm chat",
     onPrefix: true,
     dev: "HNT",
+    usedby: 1,
     cooldowns: 5,
 
     onLaunch: async function ({ api, event, actions }) {

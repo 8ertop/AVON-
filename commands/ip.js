@@ -3,6 +3,7 @@ const axios = require('axios');
 module.exports = {
     name: "ip",
     info: "Kiểm tra thông tin IP",
+    usedby: 0,
     dev: "NTKhang, Nguyên Blue [convert]",
     onPrefix: true,
     dmUser: false,

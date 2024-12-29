@@ -26,6 +26,7 @@ module.exports = {
     name: "remind",
     info: "Tạo nhắc nhở cho các công việc cần làm.",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     usages: "remind <thời gian> <nội dung nhắc nhở>",
     cooldowns: 10,

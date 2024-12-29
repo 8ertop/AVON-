@@ -8,6 +8,7 @@ module.exports = {
     name: "qr",
     info: "Quét mã QR từ hình ảnh",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     dmUser: false,
     usages: "Reply một ảnh có chứa mã QR để quét",

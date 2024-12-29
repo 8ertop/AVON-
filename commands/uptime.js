@@ -12,6 +12,7 @@ const botStartTime = Date.now();
 
 module.exports = {
     name: "uptime",
+    usedby: 0,
     info: "Xem thời gian bot đã online và thông tin hệ thống.",
     dev: "HNT",
     onPrefix: false,

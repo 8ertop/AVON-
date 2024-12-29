@@ -3,6 +3,7 @@ const { log } = require("npmlog");
 module.exports = {
   name: "setname",
   dev: "HNT",
+  usedby: 1,
   info: "Đặt biệt danh cho thành viên trong nhóm",
   onPrefix: true,
   dmUser: false,

@@ -5,6 +5,7 @@ const translate = require("translate-google");
 module.exports = {
   name: "movie",
   dev: "HNT",
+  usedby: 0,
   info: "Xem thông tin về phim",
   onPrefix: true,
   usages: ".movie [tên phim]\nVí dụ: .movie Avengers Endgame",

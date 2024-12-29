@@ -6,7 +6,8 @@ const FormData = require('form-data');
 module.exports = {
     name: "catbox",
     dev: "HNT",
-    info: "Lấy link Catbox từ video/gif được reply",
+    usedby: 2,
+    info: "Lấy link Catbox từ video/gif",
     usages: "Reply một video/gif để lấy link",
     onPrefix: true,
     cooldowns: 5,

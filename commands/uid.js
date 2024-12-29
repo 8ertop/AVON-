@@ -3,6 +3,7 @@ const axios = require('axios');
 module.exports = {
   name: "uid",
   dev: "HNT",
+  usedby: 0,
   info: "lấy UID facebook của người nào đó",
   onPrefix: false,
   dmUser: false,

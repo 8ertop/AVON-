@@ -8,7 +8,7 @@ module.exports = {
     dmUser: false,
     dev: "HNT",
     nickName: ["feedback", "fb"],
-    info: "Gửi phản hồi đến admin và nhận phản hồi lại",
+    info: "Gửi phản hồi đến admin",
     onPrefix: true,
     cooldowns: 3,
 

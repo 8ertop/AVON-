@@ -1,6 +1,6 @@
 module.exports = {
     name: "idst",
-    info: "Xem thông tin sticker và lấy ID sticker", 
+    info: "lấy ID sticker", 
     dev: "HNT",
     usedby: 2,
     onPrefix: true,

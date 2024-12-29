@@ -7,6 +7,7 @@ function formatNumber(number) {
 module.exports = {
     name: "task",
     dev: "HNT",
+    usedby: 0,
     info: "Xem và nhận thưởng nhiệm vụ hàng ngày",
     onPrefix: true,
     usages: "task",

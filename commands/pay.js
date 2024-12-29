@@ -94,6 +94,7 @@ async function createBillImage(senderName, recipientName, amount, tax, total, re
 module.exports = {
     name: "pay",
     dev: "HNT",
+    usedby: 0,
     info: "Chuyển tiền cho người khác.",
     onPrefix: true,
     usages: ".pay <số tiền>: Chuyển tiền cho người dùng được reply.",

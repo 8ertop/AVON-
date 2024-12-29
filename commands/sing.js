@@ -80,6 +80,7 @@ module.exports = {
     name: "sing",
     info: "Tìm kiếm và tải nhạc từ YouTube",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     dmUser: false,
     nickName: ["music", "download"],

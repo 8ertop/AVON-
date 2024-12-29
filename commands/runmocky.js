@@ -2,7 +2,7 @@ module.exports = {
   name: "runmocky",
   usedby: 2,
   dev:"HNT",    
-  info: "Chia sẻ và áp dụng mã lệnh\nCách dùng:\n- runmocky <tên file>: Tải mã lên\n- Reply link + runmocky <tên command>: Áp dụng mã",
+  info: "Chia sẻ lệnh từ mocky.io",
   onPrefix: true,
   cooldowns: 5,
 

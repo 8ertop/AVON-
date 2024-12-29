@@ -8,6 +8,7 @@ const imgurClientId = '34dc774b8c0ddae';
 module.exports = {
     name: "imgur",
     info: "Tải ảnh để lấy link Imgur",
+    usedby: 2,
     dev: "Hoàng Ngọc Từ",
     onPrefix: true,
     dmUser: false,

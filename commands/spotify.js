@@ -74,6 +74,7 @@ module.exports = {
     name: "spotify",
     info: "Tìm kiếm thông tin bài hát hoặc album từ Spotify.",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     dmUser: false,
     nickName: ["sp", "spot"],

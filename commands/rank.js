@@ -251,6 +251,7 @@ module.exports = {
     name: 'rank',
     info: 'Xem xếp hạng hiện tại của bạn',
     dev: 'HNT',
+    usedby: 0,
     onPrefix: true, 
     dmUser: true,
     usages: 'rank',

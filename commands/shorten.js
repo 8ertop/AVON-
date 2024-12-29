@@ -2,8 +2,9 @@ const axios = require('axios');
 
 module.exports = {
     name: "shorten",
-    info: "Rút gọn liên kết dài thành liên kết ngắ.",
+    info: "Rút gọn liên kết dài thành liên kết ngắn.",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     dmUser: false,
     nickName: ["shorten", "rutgon", "url"],

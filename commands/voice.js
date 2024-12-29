@@ -7,6 +7,7 @@ module.exports = {
     name: "voice",
     info: "Chuyển văn bản thành giọng nói",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     dmUser: false,
     nickName: ["voice", "voic"],

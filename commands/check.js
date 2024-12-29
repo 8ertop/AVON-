@@ -3,7 +3,7 @@ const axios = require('axios');
 module.exports = {
     name: "check",
     usedby: 0,
-    info: "Lấy thông tin chi tiết từ API kiểm tra URL",
+    info: "Lấy thông tin từ URL.",
     onPrefix: true,
     dev: "Jonell Magallanes",
     cooldowns: 3,

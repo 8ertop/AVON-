@@ -7,7 +7,7 @@ module.exports = {
   name: "setavatar",
   dev: "HNT",
   usedBy: 2,
-  info: "Thay đổi avatar của bot kèm hiệu ứng",
+  info: "Thay đổi avatar của bot",
   onPrefix: true,
   usages: "[caption] + reply hình ảnh hoặc nhập link",
   cooldowns: 300,

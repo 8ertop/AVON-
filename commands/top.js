@@ -5,6 +5,7 @@ const { allBalances } = require('../utils/currencies');
 module.exports = {
     name: "top",
     dev: "HNT",
+    usedby: 0,
     info: "Xem top 10 người giàu nhất server.",
     onPrefix: true,
     usages: ".top: Xem top 10 người chơi giàu nhất.",

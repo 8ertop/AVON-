@@ -64,7 +64,8 @@ const processImage = async (imagePath) => {
 module.exports = {
   name: "upscale",
   dev: "HNT",
-  description: "Làm nét ảnh với sự hỗ trợ của API nâng cao ảnh.",
+  usedby: 0,
+  description: "Làm nét ảnh",
   usages: "[reply ảnh]",
   onPrefix: false,
   cooldowns: 5,

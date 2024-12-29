@@ -4,6 +4,7 @@ const fast = require('fast-speedtest-api');
 module.exports = {
     name: "speedtest",
     dev: "HNT",
+    usedby: 2,
     info: "Kiểm tra tốc độ mạng của hệ thống Bot",
     onPrefix: false,
     usages: ".speedtest",

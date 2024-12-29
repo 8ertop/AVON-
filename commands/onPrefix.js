@@ -3,10 +3,10 @@ const path = require('path');
 
 module.exports = {
     name: "onprefix",
-    usedby: 0,
+    usedby: 2,
     dmUser: false,
     dev: "Jonell Magallanes",
-    info: "Chuyển trạng thái onPrefix của bất kỳ lệnh nào",
+    info: "Chuyển trạng thái onPrefix của bất kỳ lệnh nào đó",
     cooldowns: 5,
     onPrefix: true,
 

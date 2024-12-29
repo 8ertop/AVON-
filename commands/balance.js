@@ -20,6 +20,7 @@ try {
 module.exports = {
     name: "balance",
     dev: "HNT",
+    usedby: 0,
     info: "Kiểm tra số dư tài khoản của bạn",
     onPrefix: true,
     usages: ".balance: Kiểm tra số dư tài khoản của bạn.",

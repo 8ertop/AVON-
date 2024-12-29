@@ -1,6 +1,7 @@
 module.exports = {
     name: "count",
     dev: "HNT",
+    usedby: 0,
     info: "Đếm số ký tự trong 1 tin nhắn bất kì",
     onPrefix: true,
     usages: ".count: Đếm số ký tự trong tin nhắn trả lời, không tính dấu cách.",

@@ -52,6 +52,7 @@ module.exports = {
     name: 'wallpaper',
     info: 'Gửi 4 hình nền đẹp cho Desktop hoặc điện thoại.',
     dev: 'HNT',
+    usedby: 0,
     onPrefix: true, 
     dmUser: false, 
     nickName: ['wallpaper', 'hìnhnền'], 

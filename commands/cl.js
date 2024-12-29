@@ -8,9 +8,10 @@ function formatNumber(number) {
 module.exports = {
     name: "cl",
     dev: "HNT",
-    info: "Chơi Chẵn-Lẻ.",
+    info: "Chơi Chẵn Lẻ.",
     onPrefix: true,
     usages: "cl",
+    usedby: 0,
     cooldowns: 0,
 
     lastPlayed: {},
@@ -51,6 +52,9 @@ module.exports = {
             betAmount = parseInt(target[1], 10);
             if (isNaN(betAmount) || betAmount <= 0) {
                 return api.sendMessage("Số tiền cược phải là một số dương.", threadID, messageID);
+            }
+            if (betAmount < 10000) {
+                return api.sendMessage("Số tiền cược tối thiểu là 10,000 Xu!", threadID, messageID);
             }
         }
 

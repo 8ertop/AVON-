@@ -2,6 +2,7 @@ module.exports = {
     name: "convert",
     info: "Chuyển đổi đơn vị",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     dmUser: true,
     nickName: ["unitconvert", "convert"],

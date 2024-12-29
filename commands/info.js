@@ -5,6 +5,7 @@ const axios = require('axios');
 module.exports = {
     name: "info",
     info: "Xem thông tin người dùng",
+    usedby: 1,
     onPrefix: true,
     dev: "HNT",
     cooldowns: 5,

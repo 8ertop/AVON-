@@ -329,6 +329,7 @@ module.exports = {
   name: "ai",
   info: "Tạo văn bản và phân tích hình ảnh, quét mã QR",
   dev: "HNT",
+  usedby: 0,
   onPrefix: true,
   dmUser: false,
   nickName: ["ai"],

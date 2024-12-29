@@ -6,8 +6,9 @@ const { image } = require('image-downloader');
 
 module.exports = {
   name: 'removebg',
-  info: 'Tách nền ảnh chuyên nghiệp',
+  info: 'Tách nền ảnh',
   dev: 'HNT',
+  usedby: 0,
   onPrefix: false,
   dmUser: false,
   nickName: ['removebg'],

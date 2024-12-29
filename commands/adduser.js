@@ -1,6 +1,7 @@
 module.exports = {
     name: "adduser",
     credits: "HNT",
+    usedby: 1,
     info: "add người dùng vào nhóm theo ID FB hoặc link profile",
     onPrefix: true,
     usages: "[ID1 ID2...] hoặc [link1 link2...] hoặc mix\nVD: .adduser 123456 fb.com/user2 789012",

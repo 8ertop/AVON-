@@ -16,6 +16,7 @@ module.exports = {
   name: 'tiktok',
   info: 'Tải video, hình ảnh hoặc chuyển video thành nhạc MP3 từ TikTok',
   dev: 'HNT',
+  usedby: 0,
   onPrefix: true, 
   dmUser: false, 
   nickName: ['tiktok', 'tảivideo'],

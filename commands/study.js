@@ -1,7 +1,8 @@
 module.exports = {
     name: "study",
-    info: "Tìm kiếm tài liệu học tập miễn phí với nhiều danh mục",
+    info: "Tìm kiếm tài liệu học tập",
     dev: "HNT",
+    usedby: 0,
     onPrefix: true,
     usages: "study <category> [topic]",
     cooldowns: 10,

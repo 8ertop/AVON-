@@ -11,6 +11,7 @@ function formatNumber(number) {
 module.exports = {
     name: "tx",
     dev: "HNT", 
+    usedby: 0,
     info: "Chơi mini-game Tài Xỉu bằng số dư hiện có.",
     onPrefix: true, 
     usages: "tx",
@@ -54,6 +55,9 @@ module.exports = {
           
             if (isNaN(betAmount) || betAmount <= 0) {
                 return api.sendMessage("Số tiền cược phải là một số dương.", threadID, messageID);
+            }
+            if (betAmount < 10000) {
+                return api.sendMessage("Số tiền cược tối thiểu là 10,000 Xu!", threadID, messageID);
             }
         }
 

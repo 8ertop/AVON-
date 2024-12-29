@@ -89,8 +89,9 @@ module.exports = {
     usedby: 0,
     dmUser: false,
     dev: "HNT",
+    usedby: 0,
     nickName: ["assistant", "botchat"],
-    info: "Chat with AI assistant",
+    info: "Chat với Bot",
     onPrefix: false,
     cooldowns: 3,
 

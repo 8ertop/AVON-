@@ -10,6 +10,7 @@ module.exports = {
     info: "Tìm kiếm thông tin Anime.",
     dev: "ZiaRein",
     onPrefix: true,
+    usedby: 0,
     dmUser: false,
     nickName: ["anime"],
     usages: "anime [tên anime cần tìm]",

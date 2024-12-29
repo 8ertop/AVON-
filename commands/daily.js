@@ -66,7 +66,8 @@ const dailyManager = new DailyRewardManager();
 module.exports = {
     name: "daily",
     dev: "HNT",
-    info: "Nhận Xu mỗi ngày với hệ thống streak",
+    usedby: 0,
+    info: "Nhận Xu mỗi ngày",
     onPrefix: true,
     usages: ".daily: Nhận Xu hàng ngày. Nhận thưởng thêm khi duy trì streak!",
     cooldowns: 0,

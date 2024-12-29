@@ -5,6 +5,7 @@ const path = require("path");
 module.exports = {
   name: "tikinfo",
   dev: "Jonell Magallanes",
+  usedby: 0,
   info: "Công cụ theo dõi người dùng TikTok",
   onPrefix: true,
   usage: "[tikinfo username]",

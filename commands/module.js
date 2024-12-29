@@ -4,7 +4,7 @@ const axios = require('axios');
 module.exports = {
     name: "module",
     usedby: 2,
-    info: "Cài đặt, gỡ cài đặt, chia sẻ hoặc tải lại các mô-đun lệnh",
+    info: "lệnh ADMIN quản lý module",
     dmUser: false,
     onPrefix: true,
     dev: "Jonell Magallanes",

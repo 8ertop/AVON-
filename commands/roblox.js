@@ -25,6 +25,7 @@ const formatDate = (dateString) => {
 module.exports = {
     name: 'roblox',
     dev: 'HNT',
+    usedby: 0,
     info: 'Lấy thông tin người dùng Roblox ',
     usages: 'roblox [Tên người dùng]',
     dmUser: false,

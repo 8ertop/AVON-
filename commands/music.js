@@ -84,7 +84,7 @@ module.exports = {
     usedby: 0,
     dmUser: false,
     dev: "HNT",
-    nickName: ["music", "m", "play"],
+    nickName: ["music", "play"],
     info: "Phát nhạc từ YouTube (Nhập tên bài hát)",
     onPrefix: true,
     cooldowns: 5,

@@ -4,8 +4,8 @@ const path = require('path');
 
 module.exports = {
     name: "gai",
-    version: "1.0.0",
-    info: "xem ảnh gái xinh",
+    usedby: 0,
+    info: "xem ảnh gái",
     onPrefix: true,
     dev: "HNT",
     cooldowns: 10,

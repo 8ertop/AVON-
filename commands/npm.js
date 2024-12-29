@@ -4,7 +4,7 @@ module.exports = {
     name: "npm",
     info: "Quản lý thư viện NPM",
     dev: "HNT",
-    usedBy: 4,
+    usedBy: 2,
     onPrefix: true,
     usages: "npm [list | install | uninstall] <tên_gói>",
     cooldowns: 10,

@@ -4,6 +4,7 @@ const cheerio = require('cheerio');
 module.exports = {
   name: "vnx",
   dev: "Hoàng Ngọc Từ",
+  usedby: 0,
   info: "Xem tin tức từ VnExpress",
   onPrefix: false,
   usages: "vnx",

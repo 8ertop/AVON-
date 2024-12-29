@@ -15,6 +15,7 @@ module.exports = {
     info: "Tra cứu thông tin từ Wikipedia",
     dev: "HNT",
     onPrefix: true,
+    usedby: 0,
     dmUser: false,
     nickName: ["wiki", "wikipedia"],
     usages: "wiki [en/vi] [từ khóa] | wiki [từ khóa]",
