@@ -85,7 +85,7 @@ module.exports = {
         }
       }
 
-      let message = `👥 𝗗𝗮𝗻𝗵 𝘀á𝗰𝗵 𝗤𝘂ản 𝘁𝗿ị 𝘃𝗶𝗲𝗻 𝘃à 𝗗𝗶𝗲̂̀𝘇 𝗵𝗮̀𝗻𝗵\n${global.line}\n🛡️ Quản trị viên:\n${adminList.join("\n")}\n\n`;
+      let message = `🛡️ Quản trị viên:\n${adminList.join("\n")}\n\n`;
       if (moderatorList.length > 0) {
         message += `👮 Điều hành viên:\n${moderatorList.join("\n")}`;
       } else {
@@ -94,7 +94,7 @@ module.exports = {
 
       api.sendMessage(message, event.threadID);
     } else {
-      api.sendMessage(`🛡️ 𝗚𝗵𝗶 𝗰hú𝗰 𝗰𝗵𝗼 𝗴𝗵𝗶 𝗰𝗵ú𝗰\n${global.line}\nBạn không có quyền sử dụng lệnh này.`, event.threadID);
+      api.sendMessage(`🛡️Bạn không có quyền sử dụng lệnh này.`, event.threadID);
     }
   }
 };

@@ -1,17 +1,17 @@
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
-    const path = require("path");
-    const fs = require("fs-extra");
-    const NodeCache = require("node-cache");
-    const fetch = require('node-fetch');
-    global.fetch = fetch;
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const path = require("path");
+const fs = require("fs-extra");
+const NodeCache = require("node-cache");
+const fetch = require('node-fetch');
+global.fetch = fetch;
 
-    const responseCache = new NodeCache({ stdTTL: 1800 });
-    const conversationHistory = {};
+const responseCache = new NodeCache({ stdTTL: 1800 });
+const conversationHistory = {};
 
-    const apiKeysPath = path.join(__dirname, 'json', 'key.json');
-    let API_KEYS = [];
+const apiKeysPath = path.join(__dirname, 'json', 'key.json');
+let API_KEYS = [];
 
-    const loadAPIKeys = async () => {
+const loadAPIKeys = async () => {
     try {
         const data = await fs.readJson(apiKeysPath);
         API_KEYS = data.api_keys;
@@ -21,70 +21,70 @@
         console.error("Error loading API keys:", error);
         API_KEYS = [];
     }
-    };
+};
 
-    loadAPIKeys();
+loadAPIKeys();
 
-    const Model_Name = "gemini-1.5-flash";
-    const generationConfig = {
+const Model_Name = "gemini-1.5-flash";
+const generationConfig = {
     temperature: 1,
     topK: 0,
     topP: 0.95,
     maxOutputTokens: 4096,
-    };
+};
 
-    const systemInstruction = `
+const systemInstruction = `
     Bạn là AI trợ lý ảo có tên là AKI AI. Hãy trò chuyện một cách thân thiện và tự nhiên.
     Trả lời ngắn gọn, súc tích và luôn bằng tiếng Việt.`;
 
-    const generateResponse = async (prompt, userId) => {
+const generateResponse = async (prompt, threadId) => {
     try {
-        const cacheKey = `${prompt}-${userId}`;
+        const cacheKey = `${prompt}-${threadId}`;
         const cached = responseCache.get(cacheKey);
         if (cached) return cached;
 
         for (const apiKey of API_KEYS) {
-        try {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ 
-            model: Model_Name,
-            generationConfig
-            });
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ 
+                    model: Model_Name,
+                    generationConfig
+                });
 
-            const context = conversationHistory[userId] ? 
-            conversationHistory[userId].join("\n") : "";
-            
-            const fullPrompt = `${systemInstruction}\n${context}\nUser: ${prompt}\nBot:`;
-            
-            const result = await model.generateContent(fullPrompt);
-            const response = await result.response;
-            const text = response.text();
-            
-            responseCache.set(cacheKey, text);
-            return text;
-        } catch (error) {
-            if (error.message.includes('quota')) continue;
-            throw error;
-        }
+                const context = conversationHistory[threadId] ? 
+                    conversationHistory[threadId].join("\n") : "";
+                
+                const fullPrompt = `${systemInstruction}\n${context}\nUser: ${prompt}\nBot:`;
+                
+                const result = await model.generateContent(fullPrompt);
+                const response = await result.response;
+                const text = response.text();
+                
+                responseCache.set(cacheKey, text);
+                return text;
+            } catch (error) {
+                if (error.message.includes('quota')) continue;
+                throw error;
+            }
         }
         throw new Error("All API keys exhausted");
     } catch (error) {
         console.error("Generate response error:", error);
         throw error;
     }
-    };
+};
 
-    const updateConversationHistory = (userId, message) => {
-    if (!conversationHistory[userId]) {
-        conversationHistory[userId] = [];
+const updateConversationHistory = (threadId, message) => {
+    if (!conversationHistory[threadId]) {
+        conversationHistory[threadId] = [];
     }
-    conversationHistory[userId].push(message);
-    if (conversationHistory[userId].length > 10) {
-        conversationHistory[userId].shift();
+    conversationHistory[threadId].push(message);
+    if (conversationHistory[threadId].length > 10) {
+        conversationHistory[threadId].shift();
     }
-    };
+};
 
-    module.exports = {
+module.exports = {
     name: "bot",
     usedby: 0,
     dmUser: false,
@@ -95,40 +95,40 @@
     cooldowns: 3,
 
     onReply: async function({ event, api }) {
-        const { threadID, messageID, body, senderID } = event;
+        const { threadID, messageID, body } = event;
         try {
-        updateConversationHistory(senderID, `User: ${body}`);
-        const response = await generateResponse(body, senderID);
-        updateConversationHistory(senderID, `Bot: ${response}`);
-        
-        const msg = await api.sendMessage(response, threadID, messageID);
-        
-        global.client.onReply.push({
-            name: this.name,
-            messageID: msg.messageID,
-            author: senderID
-        });
+            updateConversationHistory(threadID, `User: ${body}`);
+            const response = await generateResponse(body, threadID);
+            updateConversationHistory(threadID, `Bot: ${response}`);
+            
+            const msg = await api.sendMessage(response, threadID, messageID);
+            
+            global.client.onReply.push({
+                name: this.name,
+                messageID: msg.messageID,
+                author: threadID
+            });
         } catch (error) {
-        api.sendMessage("❌ Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.", threadID, messageID);
+            api.sendMessage("❌ Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.", threadID, messageID);
         }
     },
 
     onLaunch: async function ({ event, api }) {
-        const { threadID, messageID, body, senderID } = event;
+        const { threadID, messageID, body } = event;
         try {
-        updateConversationHistory(senderID, `User: ${body}`);
-        const response = await generateResponse(body, senderID);
-        updateConversationHistory(senderID, `Bot: ${response}`);
+            updateConversationHistory(threadID, `User: ${body}`);
+            const response = await generateResponse(body, threadID);
+            updateConversationHistory(threadID, `Bot: ${response}`);
 
-        const msg = await api.sendMessage(response, threadID, messageID);
+            const msg = await api.sendMessage(response, threadID, messageID);
 
-        global.client.onReply.push({
-            name: this.name,
-            messageID: msg.messageID,
-            author: senderID
-        });
+            global.client.onReply.push({
+                name: this.name,
+                messageID: msg.messageID,
+                author: threadID
+            });
         } catch (error) {
-        api.sendMessage("❌ Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.", threadID, messageID);
+            api.sendMessage("❌ Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.", threadID, messageID);
         }
     }
-    };
+};

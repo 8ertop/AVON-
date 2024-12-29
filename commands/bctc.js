@@ -104,7 +104,6 @@ module.exports = {
                 resultMessage += `😢 Bạn đã thua và mất ${formatNumber(betAmount)} Xu.\n`;
             }
 
-            // Track that user played a game
             updateQuestProgress(senderID, "play_bctc");
 
             const newBalance = getBalance(senderID);

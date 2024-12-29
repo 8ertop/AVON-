@@ -58,11 +58,6 @@ module.exports = {
                 msg += `Tham gia từ: ${joinedAt.toLocaleString('vi-VN')}\n`;
                 msg += `Tổng tin nhắn: ${messageCount || 'Chưa có thống kê'}\n`;
                 
-                msg += `\n🔍 𝗧𝗨̛𝗢̛𝗡𝗚 𝗧𝗔́𝗖\n`;
-                msg += `Lần cuối online: ${new Date().toLocaleString('vi-VN')}\n`;
-                msg += `Trạng thái: ${userInfo.presence ? 'Đang hoạt động' : 'Không hoạt động'}\n`;
-                msg += `━━━━━━━━━━━━━━━━━━`;
-
                 await api.sendMessage({
                     body: msg,
                     attachment: fs.createReadStream(tempAvatarPath)
@@ -83,11 +78,6 @@ module.exports = {
                 msg += `Tham gia từ: ${joinedAt.toLocaleString('vi-VN')}\n`;
                 msg += `Tổng tin nhắn: ${messageCount || 'Chưa có thống kê'}\n`;
                 
-                msg += `\n🔍 𝗧𝗨̛𝗢̛𝗡𝗚 𝗧𝗔́𝗖\n`;
-                msg += `Lần cuối online: ${new Date().toLocaleString('vi-VN')}\n`;
-                msg += `Trạng thái: ${userInfo.presence ? 'Đang hoạt động' : 'Không hoạt động'}\n`;
-                msg += `━━━━━━━━━━━━━━━━━━`;
-
                 await api.sendMessage(msg, event.threadID, event.messageID);
             }
 

@@ -6,7 +6,7 @@ module.exports = {
     info: "Thực thi lệnh shell",
     onPrefix: true,
     nickName: ["exec", "linux"],
-    dev: "Jonell Magallanes",
+    dev: "HNT",
     cooldowns: 3,
     dmUser: false,
     usages: "shell <lệnh>",

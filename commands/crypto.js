@@ -9,7 +9,7 @@ module.exports = {
     name: 'crypto',
     info: 'Xem giá tiền điện tử',
     dev: 'Hoàng Ngọc Từ',
-    onPrefix: false,
+    onPrefix: true,
     dmUser: false,
     nickName: ['crypto', 'btc', 'bitcoin'],
     usages: 'crypto\n\nHướng dẫn sử dụng:\n' +

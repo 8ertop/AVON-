@@ -1,4 +1,3 @@
-
 const fs = require("fs");
 const axios = require('axios');
 const gradient = require('gradient-string');
@@ -12,7 +11,11 @@ const { logChatRecord, notifyAdmins } = require('./logs');
 const threadsDB = JSON.parse(fs.readFileSync("./database/threads.json", "utf8") || "{}");
 const usersDB = JSON.parse(fs.readFileSync("./database/users.json", "utf8") || "{}");
 const cooldowns = {};
-global.client = global.client || { callReact: [], onReply: [] };
+global.client = global.client || { 
+    callReact: [], 
+    handleReply: [], // Initialize handleReply array
+    onReply: [] 
+};
 global.bot = { usersDB, threadsDB };
 global.line = "━━━━━━━━━━━━━━━━━━";
 
