@@ -3,8 +3,8 @@ const axios = require('axios');
 const gradient = require('gradient-string');
 const { bannedUsers, bannedThreads } = require('./ban');
 const { handleUnsend } = require('./unsend');
-const { handleLogSubscribe } = require('./logsub');
-const { handleLogUnsubscribe } = require('./logunsub');
+const { handleLogSubscribe } = require('./join');
+const { handleLogUnsubscribe } = require('./leave');
 const { actions } = require('./actions');
 const { logChatRecord, notifyAdmins } = require('./logs');
 
@@ -13,7 +13,7 @@ const usersDB = JSON.parse(fs.readFileSync("./database/users.json", "utf8") || "
 const cooldowns = {};
 global.client = global.client || { 
     callReact: [], 
-    handleReply: [], // Initialize handleReply array
+    handleReply: [], 
     onReply: [] 
 };
 global.bot = { usersDB, threadsDB };
