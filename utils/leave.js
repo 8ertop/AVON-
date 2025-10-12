@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const handleLogUnsubscribe = async (api, event) => {
     if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID()) return;
 
@@ -10,7 +12,7 @@ const handleLogUnsubscribe = async (api, event) => {
             threadInfo = { participantIDs: [], threadName: "Unnamed group" };
         }
 
-        const { threadName, participantIDs } = threadInfo;
+        const { threadName, participantIDs, adminIDs } = threadInfo;
         const isSelfLeave = event.author == event.logMessageData.leftParticipantFbId;
         const leftUserId = event.logMessageData.leftParticipantFbId;
        
@@ -20,6 +22,25 @@ const handleLogUnsubscribe = async (api, event) => {
         const actionType = isSelfLeave 
             ? "đã tự rời khỏi nhóm"
             : `đã bị đá bởi ${adminName}`;
+
+        try {
+            const threadsDBPath = './database/threads.json';
+            let threadsDB = {};
+            if (fs.existsSync(threadsDBPath)) {
+                threadsDB = JSON.parse(fs.readFileSync(threadsDBPath, 'utf8') || '{}');
+            }
+
+            if (threadsDB[event.threadID]) {
+                threadsDB[event.threadID].members = participantIDs;
+                threadsDB[event.threadID].memberCount = participantIDs.length;
+                threadsDB[event.threadID].admins = adminIDs || [];
+                threadsDB[event.threadID].name = threadName;
+                threadsDB[event.threadID].lastInfoUpdate = Date.now();
+                fs.writeFileSync(threadsDBPath, JSON.stringify(threadsDB, null, 2));
+            }
+        } catch (error) {
+            console.error("Error updating threads.json:", error);
+        }
 
         await api.sendMessage(
             `🚪 ${userName} ${actionType}.\n👥 Thành viên còn lại: ${participantIDs.length}`,

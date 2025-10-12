@@ -64,84 +64,23 @@ async function circleImage(imageBuffer, size) {
     return canvas.toBuffer();
 }
 
-const nameCachePath = path.join(__dirname, '../database/json/usernames.json');
-let nameCache = {};
 
-function initNameCache() {
+function getUserName(userId) {
     try {
-        if (fs.existsSync(nameCachePath)) {
-            nameCache = JSON.parse(fs.readFileSync(nameCachePath));
-        } else {
-            if (!fs.existsSync(path.dirname(nameCachePath))) {
-                fs.mkdirSync(path.dirname(nameCachePath), { recursive: true });
-            }
-            fs.writeFileSync(nameCachePath, JSON.stringify({}));
-        }
-    } catch (err) {
-        console.error('Name cache init error:', err);
-    }
-}
-
-function saveName(userID, name) {
-    try {
-        nameCache[userID] = {
-            name: name,
-            timestamp: Date.now()
-        };
-        fs.writeFileSync(nameCachePath, JSON.stringify(nameCache, null, 2));
-    } catch (err) {
-        console.error('Name cache save error:', err);
-    }
-}
-
-async function getUserName(api, senderID, threadID) {
-    
-    if (!nameCache) initNameCache();
-
-    if (nameCache[senderID]) {
-        const cached = nameCache[senderID];
       
-        if (Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
-            return cached.name;
+        if (global.bot?.usersDB && global.bot.usersDB[userId]?.name) {
+            return global.bot.usersDB[userId].name;
         }
-    }
-
-    try {
-    
-        try {
-            const userInfo = await api.getUserInfo(senderID);
-            if (userInfo[senderID]?.name) {
-                saveName(senderID, userInfo[senderID].name);
-                return userInfo[senderID].name;
-            }
-        } catch (apiError) {
-            console.log('API getUserInfo error:', apiError);
+        
+        const usersDB = JSON.parse(fs.readFileSync('./database/users.json', 'utf8') || '{}');
+        if (usersDB[userId]?.name) {
+            return usersDB[userId].name;
         }
-
-        try {
-            const threadInfo = await api.getThreadInfo(threadID);
-            const participant = threadInfo.userInfo?.find(user => user.id === senderID);
-            if (participant?.name) {
-                saveName(senderID, participant.name);
-                return participant.name;
-            }
-        } catch (threadError) {
-            console.log('Thread info error:', threadError);
-        }
-
-        const userData = JSON.parse(fs.readFileSync(userDataPath, 'utf8'));
-        if (userData[senderID]?.name) {
-            saveName(senderID, userData[senderID].name);
-            return userData[senderID].name;
-        }
-
-        const fallbackName = `Người dùng ${senderID}`;
-        saveName(senderID, fallbackName);
-        return fallbackName;
-
+        
+        return `Người dùng ${userId}`;
     } catch (error) {
         console.log('getUserName error:', error);
-        return `Người dùng ${senderID}`;
+        return `Người dùng ${userId}`;
     }
 }
 
@@ -349,8 +288,7 @@ module.exports = {
             if (!userData[userId]) {
                 userData[userId] = { 
                     exp: 0, 
-                    level: 1, 
-                    name: await getUserName(api, userId, threadID) 
+                    level: 1
                 };
             } else {
                 let expGain = 1;
@@ -377,7 +315,7 @@ module.exports = {
 
                 messageQueue.push({
                     senderID: userId,
-                    name: userData[userId].name,
+                    name: getUserName(userId),
                     exp: userData[userId].exp,
                     level: rankLevel,
                     rank: rank,

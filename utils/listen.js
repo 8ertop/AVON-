@@ -45,6 +45,26 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
             }
         }
 
+        async function getThreadInfo(api, threadID) {
+            try {
+                const threadInfo = await api.getThreadInfo(threadID);
+                return {
+                    name: threadInfo.threadName || threadInfo.name || `Thread ${threadID}`,
+                    memberCount: threadInfo.participantIDs?.length || 0,
+                    members: threadInfo.participantIDs || [],
+                    admins: threadInfo.adminIDs || []
+                };
+            } catch (error) {
+                console.error(error);
+                return {
+                    name: `Thread ${threadID}`,
+                    memberCount: 0,
+                    members: [],
+                    admins: []
+                };
+            }
+        }
+
         if (event.logMessageType === "log:subscribe") {
             await notifyAdmins(api, event.threadID, "Joined", event.senderID);
             handleLogSubscribe(api, event, adminConfig);
@@ -100,16 +120,52 @@ const handleListenEvents = (api, commands, eventCommands, threadsDB, usersDB) =>
             const commandArgs = isPrefixed ? message.slice(adminConfig.prefix.length).split(' ').slice(1) : message.split(' ').slice(1);
 
             if (!usersDB[senderID]) {
-                usersDB[senderID] = { lastMessage: Date.now() };
+                const userName = await getUserName(api, senderID);
+                usersDB[senderID] = { 
+                    lastMessage: Date.now(),
+                    name: userName 
+                };
                 fs.writeFileSync("./database/users.json", JSON.stringify(usersDB, null, 2));
-                console.error(gradient.summer(`[ DATABASE ] PHÁT HIỆN NGƯỜI DÙNG MỚI TRONG ID NGƯỜI GỬI: ${senderID}`));
+                console.error(gradient.summer(`[ DATABASE ] PHÁT HIỆN NGƯỜI DÙNG MỚI TRONG ID NGƯỜI GỬI: ${senderID} - ${userName}`));
+            } else {
+                usersDB[senderID].lastMessage = Date.now();
+                if (!usersDB[senderID].name || !usersDB[senderID].lastNameUpdate || (Date.now() - usersDB[senderID].lastNameUpdate) > 24 * 60 * 60 * 1000) {
+                    const userName = await getUserName(api, senderID);
+                    usersDB[senderID].name = userName;
+                    usersDB[senderID].lastNameUpdate = Date.now();
+                    fs.writeFileSync("./database/users.json", JSON.stringify(usersDB, null, 2));
+                }
             }
 
             if (!threadsDB[threadID]) {
-                threadsDB[threadID] = { lastMessage: Date.now() };
-                fs.writeFileSync("./database/threads.json", JSON.stringify(threadsDB, null, 2));
                 if (isGroup) {
-                    console.error(gradient.summer(`[ DATABASE ] ID NHÓM MỚI ĐƯỢC PHÁT HIỆN: ${threadID}`));
+                    const threadInfo = await getThreadInfo(api, threadID);
+                    threadsDB[threadID] = { 
+                        lastMessage: Date.now(),
+                        name: threadInfo.name,
+                        memberCount: threadInfo.memberCount,
+                        members: threadInfo.members,
+                        admins: threadInfo.admins,
+                        lastInfoUpdate: Date.now()
+                    };
+                    console.error(gradient.summer(`[ DATABASE ] ID NHÓM MỚI ĐƯỢC PHÁT HIỆN: ${threadID} - ${threadInfo.name} (${threadInfo.memberCount} thành viên, ${threadInfo.admins.length} admin)`));
+                } else {
+                    threadsDB[threadID] = { 
+                        lastMessage: Date.now(),
+                        name: 'Inbox'
+                    };
+                }
+                fs.writeFileSync("./database/threads.json", JSON.stringify(threadsDB, null, 2));
+            } else {
+                threadsDB[threadID].lastMessage = Date.now();
+                if (isGroup && (!threadsDB[threadID].name || !threadsDB[threadID].lastInfoUpdate || (Date.now() - threadsDB[threadID].lastInfoUpdate) > 24 * 60 * 60 * 1000)) {
+                    const threadInfo = await getThreadInfo(api, threadID);
+                    threadsDB[threadID].name = threadInfo.name;
+                    threadsDB[threadID].memberCount = threadInfo.memberCount;
+                    threadsDB[threadID].members = threadInfo.members;
+                    threadsDB[threadID].admins = threadInfo.admins;
+                    threadsDB[threadID].lastInfoUpdate = Date.now();
+                    fs.writeFileSync("./database/threads.json", JSON.stringify(threadsDB, null, 2));
                 }
             }
 

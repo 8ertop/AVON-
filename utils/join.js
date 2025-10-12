@@ -67,8 +67,27 @@ const handleLogSubscribe = async (api, event, adminConfig) => {
         }
 
         let threadName = threadInfo.threadName || "Unnamed group";
-        let { participantIDs } = threadInfo;
+        let { participantIDs, adminIDs } = threadInfo;
         let addedParticipants = event.logMessageData.addedParticipants;
+
+        try {
+            const threadsDBPath = './database/threads.json';
+            let threadsDB = {};
+            if (fs.existsSync(threadsDBPath)) {
+                threadsDB = JSON.parse(fs.readFileSync(threadsDBPath, 'utf8') || '{}');
+            }
+
+            if (threadsDB[threadID]) {
+                threadsDB[threadID].members = participantIDs;
+                threadsDB[threadID].memberCount = participantIDs.length;
+                threadsDB[threadID].admins = adminIDs || [];
+                threadsDB[threadID].name = threadName;
+                threadsDB[threadID].lastInfoUpdate = Date.now();
+                fs.writeFileSync(threadsDBPath, JSON.stringify(threadsDB, null, 2));
+            }
+        } catch (error) {
+            console.error("Error updating threads.json:", error);
+        }
 
         for (let newParticipant of addedParticipants) {
             let userID = newParticipant.userFbId;
