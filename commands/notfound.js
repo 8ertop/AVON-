@@ -35,37 +35,85 @@ module.exports = {
             .map(({ cmd }) => cmd);
     },
 
+    onLaunch: function({ event, actions, api, prefix, commandName }) {
+        const allCommands = Object.keys(global.cc.module.commands)
+            .filter(cmd => !global.cc.module.commands[cmd].hide);
+            
+        return this.handleNotFound({ 
+            api, 
+            event, 
+            commandName, 
+            prefix, 
+            allCommands 
+        });
+    },
+
     handleNotFound: async function({ api, event, commandName, prefix, allCommands }) {
         if (!commandName) {
-            let emptyMessage = "╭── [ 𝗟𝗘̣̂𝗡𝗛 𝗧𝗥𝗢̂́𝗡𝗚 ] ────⌈ ❌ ⌋\n";
-            emptyMessage += "│ ➜ Prefix của bot: " + prefix + "\n";
-            emptyMessage += "│ ➜ Vui lòng nhập lệnh cần dùng\n";
-            emptyMessage += "╰─────────────────⌈ 💡 ⌋\n\n";
-            emptyMessage += "『✨』➜ Ví dụ: " + prefix + "help\n";
-            emptyMessage += "『💌』➜ Để xem danh sách lệnh";
+            const emptyMessage = [
+                "❓ BẠN MUỐN DÙNG LỆNH GÌ?",
+                "━━━━━━━━━━━━━━━━━━",
+                "",
+                "📌 HƯỚNG DẪN NHANH:",
+                `• Gõ ${prefix} + tên lệnh để sử dụng`,
+                `• Ví dụ: ${prefix}help, ${prefix}coin`,
+                "",
+                "💡 MẸO:",
+                `• Gõ ${prefix}help để xem danh sách lệnh`,
+                "• Đọc kỹ hướng dẫn trước khi dùng",
+                "• Hỏi admin nếu cần giúp đỡ"
+            ].join('\n');
             
             return api.sendMessage(emptyMessage, event.threadID, (err, info) => {
-                if (!err) setTimeout(() => api.unsendMessage(info.messageID), 20000);
+                if (!err) setTimeout(() => api.unsendMessage(info.messageID), 30000);
             });
         }
 
         const similarCommands = this.findSimilarCommands(commandName, allCommands);
         
-        let notFoundMessage = "╭── [ 𝗦𝗔𝗜 𝗟𝗘̣̂𝗡𝗛 ] ────⌈ ❌ ⌋\n";
-        notFoundMessage += `│ ➜ Lệnh: ${prefix}${commandName}\n`;
+        let notFoundMessage = [
+            "❌ LỆNH KHÔNG TỒN TẠI",
+            "━━━━━━━━━━━━━━━━━━",
+            "",
+            `🔍 Bạn đang tìm: ${prefix}${commandName}`,
+        ].join('\n');
         
         if (similarCommands.length > 0) {
-            notFoundMessage += `│ ➜ Có thể bạn muốn dùng:\n`;
+            notFoundMessage += "\n\n💡 CÓ THỂ BẠN MUỐN DÙNG:";
             similarCommands.forEach((cmd, index) => {
-                notFoundMessage += `│ ${index + 1}. ${prefix}${cmd}\n`;
+                notFoundMessage += `\n${index + 1}. ${prefix}${cmd}`;
+          
+                const cmdDescription = this.getCommandDescription(cmd);
+                if (cmdDescription) {
+                    notFoundMessage += `\n   ➣ ${cmdDescription}`;
+                }
             });
         }
         
-        notFoundMessage += "╰─────────────────⌈ 💡 ⌋\n\n";
-        notFoundMessage += `『✨』➜ Gõ ${prefix}help để xem chi tiết`;
+        notFoundMessage += "\n\n📌 HƯỚNG DẪN:";
+        notFoundMessage += `\n• Gõ ${prefix}help để xem danh sách lệnh`;
+        notFoundMessage += `\n• Gõ ${prefix}help <tên lệnh> để xem chi tiết`;
+        notFoundMessage += "\n• Kiểm tra chính tả và thử lại";
 
         return api.sendMessage(notFoundMessage, event.threadID, (err, info) => {
-            if (!err) setTimeout(() => api.unsendMessage(info.messageID), 20000);
+            if (!err) setTimeout(() => api.unsendMessage(info.messageID), 30000);
         });
+    },
+
+    getCommandDescription(cmdName) {
+        const descriptions = {
+            "help": "Xem danh sách và hướng dẫn sử dụng lệnh",
+            "coin": "Chơi game đào coin và kiếm tiền",
+            "market": "Xem và giao dịch trên thị trường",
+            "info": "Xem thông tin người dùng và nhóm",
+            "daily": "Nhận quà hàng ngày",
+            "work": "Làm việc kiếm tiền",
+            "play": "Nghe nhạc từ YouTube",
+            "tiktok": "Tải video từ TikTok",
+            "weather": "Xem thông tin thời tiết",
+            "translate": "Dịch văn bản qua ngôn ngữ khác",
+    
+        };
+        return descriptions[cmdName];
     }
 };

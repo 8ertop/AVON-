@@ -1,15 +1,12 @@
 {
   "prefix": ".",
   "adminUIDs": [
-    "61561753304881",
-    "61563982612558"
-  ],
-  "moderatorUIDs": [
-    "61561753304881",
-    "61563982612558",
     ""
   ],
-  "botName": "AKI BOT",
+  "moderatorUIDs": [
+    ""
+  ],
+  "botName": "AION",
   "ownerName": "Kenji Akira",
   "facebookLink": "61561753304881",
   "resend": false,
